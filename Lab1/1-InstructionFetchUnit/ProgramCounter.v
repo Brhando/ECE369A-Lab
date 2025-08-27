@@ -33,7 +33,7 @@ module ProgramCounter(Address, PCResult, Reset, Clk);
 
         //Sequential logic (updated on the positive edge of the clock)
         always @(posedge Clk) begin
-	    if (~Reset)
+	    if (Reset)
 	        PCResult <= 32'b0;
 	    else
 		PCResult <= Address;
