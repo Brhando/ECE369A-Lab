@@ -29,6 +29,11 @@ module ProgramCounter_tb();
 	initial begin
 	
     /* Please fill in the implementation here... */
+    Address <= 32'd15;
+    #20 Reset = 1'b1;
+    $display("PCResult = %0d Reset = %0d", PCResult, Reset);
+    #10 Reset = 1'b0;
+    $display("PCResult = %0d Reset = %0d", PCResult, Reset);
 	
 	end
 
