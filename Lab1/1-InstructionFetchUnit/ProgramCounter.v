@@ -31,11 +31,11 @@ module ProgramCounter(Address, PCResult, Reset, Clk);
 
 	output reg [31:0] PCResult;
 
-        //Sequential logic (updated on the positive edge of the clock)
-        always @(posedge Clk) begin
-	    if (Reset)
+	//Sequential logic (updated on the positive edge of the clock); posedge Reset gives asynch, global reset
+	always @(posedge Clk or posedge Reset) begin
+		if (Reset) //if reset is pressed, PCResult goes back to 0
 	        PCResult <= 32'b0;
-	    else
+	    else //otherwise load next address; calculated and given by the PCAdder wired to Address
 		PCResult <= Address;
 	end
 
