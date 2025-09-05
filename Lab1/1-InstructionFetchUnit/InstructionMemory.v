@@ -46,7 +46,7 @@ module InstructionMemory(Address, Instruction);
     reg [31:0] mem [0:127];
 
     //initialize mem's contents (mem[i] = i * 3)
-    integer i;
+    integer i; //declare variable i to be used in the for loop below
     //use a for loop to multiply each word by 3
     initial begin
         for (i = 0; i < 128; i = i + 1) begin
@@ -55,7 +55,8 @@ module InstructionMemory(Address, Instruction);
     end
 
     //this chip is purely combinational
-    //perform the combinational read using bits [8:2]; bits [1:0] (least significant) are used for addressing (byte offset), so we don't care about those
+    //perform the combinational read using bits [8:2]; bits [1:0] (least significant) are used for addressing (byte offset), so 
+    //dropping theses to bits is the same as shifting right by 2 or dividing by 4. It is used to map the byte address into a word index.
     always @(*) begin
         //load into instruction
         Instruction = mem [Address[8:2]];
