@@ -41,7 +41,7 @@
 module InstructionFetchUnit(Instruction, PCResult, Reset, Clk);
     input Reset, Clk;
     
-    output [31:0] PCResult, Instruction;
+    output [15:0] PCResult, Instruction;
     
     wire [31:0] PCAddResult;
     
@@ -58,8 +58,6 @@ module InstructionFetchUnit(Instruction, PCResult, Reset, Clk);
     PCAdder adder(
     .PCResult(PCResult),
     .PCAddResult(PCAddResult));
-    /* Please fill in the implementation here... */
-    
     
 endmodule
 
