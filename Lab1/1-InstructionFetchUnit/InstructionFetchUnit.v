@@ -46,18 +46,20 @@ module InstructionFetchUnit(Instruction, PCResult, Reset, Clk);
     wire [31:0] PCAddResult;
     
     ProgramCounter pc (
-    .Address(PCAddReult),
+    .Address(PCAddResult),
     .PCResult(PCResult),
     .Reset(Reset),
     .Clk(Clk));
     
     InstructionMemory im(
-    .Address(NextPC),
+    .Address(PCResult),
     .Instruction(Instruction));
     
     PCAdder adder(
     .PCResult(PCResult),
     .PCAddResult(PCAddResult));
     /* Please fill in the implementation here... */
+    
+    
 endmodule
 
