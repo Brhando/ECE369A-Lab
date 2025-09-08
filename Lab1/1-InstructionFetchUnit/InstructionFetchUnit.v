@@ -39,7 +39,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 module InstructionFetchUnit(Instruction, PCResult, Reset, Clk);
-
+    input Reset, Clk;
+    
+    output [31:0] PCResult, Instruction;
+    
+    wire [31:0] PCAddResult;
+    
+    ProgramCounter pc (
+    .Address(PCAddReult),
+    .PCResult(PCResult),
+    .Reset(Reset),
+    .Clk(Clk));
+    
+    InstructionMemory im(
+    .Address(NextPC),
+    .Instruction(Instruction));
+    
+    PCAdder adder(
+    .PCResult(PCResult),
+    .PCAddResult(PCAddResult));
     /* Please fill in the implementation here... */
 endmodule
 
