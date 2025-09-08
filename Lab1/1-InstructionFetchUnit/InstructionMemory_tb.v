@@ -34,11 +34,11 @@ module InstructionMemory_tb();
 		//utilize the task to check Instruction at multiple values of Address; Address is byte index, so we use multiples of 4
 		check(32'd0); //index 0; bytes 0 - 3
 		check(32'd4); //index 1; bytes 4 - 7
-		check(32'd8); // etc...
-		check(32'd12);
-		check(32'd16);
-		check(32'd20);
-		check(32'd40);
+		check(32'd8); //index 2; bytes 8 - 11
+		check(32'd12);//index 3 
+		check(32'd16);//index 4
+		check(32'd20);//index 5
+		check(32'd40);//index 10
 		$finish;
 		
 	end
