@@ -26,6 +26,8 @@ module Top(Reset, Clk
     input Reset, Clk;
     wire ClkOut;
     wire [31:0] Instruction, PCResult;
+    output [7:0] out7;
+    output reg [7:0] en_out;
     
     ClkDiv clk(
     .Clk(Clk),
