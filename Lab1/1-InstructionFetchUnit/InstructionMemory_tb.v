@@ -17,7 +17,8 @@ module InstructionMemory_tb();
 
 	InstructionMemory u0(
 		.Address(Address),
-        .Instruction(Instruction)
+		.Instruction(Instruction),
+		.expects(expects)
 	);
 
 	//define a task to test Address and Instruction at multiple values
