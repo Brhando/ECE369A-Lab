@@ -45,7 +45,7 @@ module InstructionFetchUnit(Instruction, PCResult, Reset, Clk);
     
     wire [31:0] PCAddResult;
     
-    ProgramCounter pc (
+    ProgramCounter pc ( 
     .Address(PCAddResult),
     .PCResult(PCResult),
     .Reset(Reset),
