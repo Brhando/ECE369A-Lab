@@ -26,14 +26,8 @@ module Top(Reset, Clk, out7, en_out
     input Reset, Clk;
     wire ClkOut;
     wire [31:0] Instruction, PCResult;
-<<<<<<< HEAD
-<<<<<<< HEAD
     output [6:0] out7; //seg a, b, ... g
     output [7:0] en_out;
-=======
->>>>>>> 10609ebed1cdc419b76bbf466d668629a15805f1
-=======
->>>>>>> 10609ebed1cdc419b76bbf466d668629a15805f1
     
     ClkDiv clk(
     .Clk(Clk),
