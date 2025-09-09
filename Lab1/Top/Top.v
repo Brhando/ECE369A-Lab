@@ -20,37 +20,31 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module Top(
-    input  wire Clk,   // match XDC
-    input  wire Reset,       // active-high pushbutton (rename to match XDC)
-    output wire [6:0] out7,  // seven-seg segments a..g
-    output wire [7:0] en_out 
-);
-    //Slow the system clock so the display updates at a human-visible rate
+module Top(Reset, Clk, out7, en_out
+
+    );
+    input Reset, Clk;
     wire ClkOut;
-    ClkDiv u_div (
-        .Clk    (Clk),
-        .Rst    (Reset),
-        .ClkOut (ClkOut)
-    );
-
-    //Run the IFU on the same divided clock
-    wire [15:0] pc16;
-    wire [15:0] instr16;
-
-    InstructionFetchUnit IFU (
-        .Reset       (Reset),
-        .Clk         (ClkOut),
-        .PCResult    (pc16),     //IFU already outputs 16-bit values
-        .Instruction (instr16)
-    );
-
-    // Drive the dual 4-digit HEX display
-    Two4DigitDisplay disp (
-        .Clk     (ClkOut),
-        .NumberA (instr16),  // show Instruction on the left 4 digits
-        .NumberB (pc16),     // show PC on the right 4 digits
-        .out7    (out7),
-        .en_out  (en_out)
+    wire [31:0] Instruction, PCResult;
+    output [6:0] out7; //seg a, b, ... g
+    output [7:0] en_out;
+    
+    ClkDiv clk(
+    .Clk(Clk),
+    .Rst(0),
+    .ClkOut(ClkOut));
+    
+    InstructionFetchUnit IFU(
+    .Instruction(Instruction),
+    .PCResult(PCResult),
+    .Reset(Reset),
+    .Clk(ClkOut));
+    
+    Two4DigitDisplay TDD(
+    .NumberA(Instruction[15:0]),
+    .NumberB(PCResult[15:0]),
+    .Clk(Clk),
+    .out7(out7),
+    .en_out(en_out)
     );
 endmodule
