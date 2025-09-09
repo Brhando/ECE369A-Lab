@@ -20,12 +20,14 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module Top(Reset, Clk
+module Top(Reset, Clk, out7, en_out
 
     );
     input Reset, Clk;
     wire ClkOut;
     wire [31:0] Instruction, PCResult;
+    output [6:0] out7; //seg a, b, ... g
+    output [7:0] en_out;
     
     ClkDiv clk(
     .Clk(Clk),
@@ -41,6 +43,8 @@ module Top(Reset, Clk
     Two4DigitDisplay TDD(
     .NumberA(Instruction[15:0]),
     .NumberB(PCResult[15:0]),
-    .Clk(Clk)
+    .Clk(Clk),
+    .out7(out7),
+    .en_out(en_out)
     );
 endmodule
