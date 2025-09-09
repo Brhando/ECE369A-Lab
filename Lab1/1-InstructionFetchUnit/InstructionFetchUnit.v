@@ -38,40 +38,28 @@
 // which generates a continuous clock pulse into the module.
 ////////////////////////////////////////////////////////////////////////////////
 
-module InstructionFetchUnit(
-    input         Reset,
-    input         Clk,
-    output [15:0] PCResult,      // 16-bit for display
-    output [15:0] Instruction    // 16-bit for display
-);
-    // Internal 32-bit datapath signals
-    wire [31:0] pc;        // current PC
-    wire [31:0] pc_next;   // PC + 4
-    wire [31:0] instr;     // 32-bit instruction from ROM
-
-    // PC register: loads pc_next on each rising edge (reset -> 0)
-    ProgramCounter u_pc (
-        .Address  (pc_next),
-        .Reset    (Reset),
-        .Clk      (Clk),
-        .PCResult (pc)
-    );
-
-    // PC + 4 adder
-    PCAdder u_adder (
-        .PCResult    (pc),
-        .PCAddResult (pc_next)
-    );
-
-    // Instruction ROM, byte-addressed; uses full 32-bit PC as address
-    InstructionMemory u_imem (
-        .Address     (pc),
-        .Instruction (instr)
-    );
-
-    // Drop upper 16 bits for the 7-seg display
-    assign PCResult    = pc[15:0];
-    assign Instruction = instr[15:0];
+module InstructionFetchUnit(Instruction, PCResult, Reset, Clk);
+    input Reset, Clk;
+    
+    output [31:0] PCResult, Instruction;
+    
+    wire [31:0] PCAddResult;
+    
+    ProgramCounter pc ( 
+    .Address(PCAddResult),
+    .PCResult(PCResult),
+    .Reset(Reset),
+    .Clk(Clk));
+    
+    InstructionMemory im(
+    .Address(PCResult),
+    .Instruction(Instruction));
+    
+    PCAdder adder(
+    .PCResult(PCResult),
+    .PCAddResult(PCAddResult));
+    /* Please fill in the implementation here... */
+    
     
 endmodule
 
