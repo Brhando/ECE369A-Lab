@@ -21,7 +21,7 @@
 
 
 module Top(
-    input  wire CLK100MHZ,   // match XDC
+    input  wire Clk,   // match XDC
     input  wire Reset,       // active-high pushbutton (rename to match XDC)
     output wire [6:0] out7,  // seven-seg segments a..g
     output wire [7:0] en_out 
@@ -29,7 +29,7 @@ module Top(
     //Slow the system clock so the display updates at a human-visible rate
     wire ClkOut;
     ClkDiv u_div (
-        .Clk    (CLK100MHZ),
+        .Clk    (Clk),
         .Rst    (Reset),
         .ClkOut (ClkOut)
     );
