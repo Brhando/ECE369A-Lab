@@ -12,8 +12,14 @@
 #
 # Questions:-
 # 1. Briefly describe the purposes of the registers, $t0, $t1, $t2, and $t3.
+# $t1: holds the index into the string 'str'
+# $t0: holds the current character from str[$t1]
+# $t2: holds the number of matches found so far, and is incremented when $t0 == $t3
+# $t3: holds the target character. In this case it is 65 or 'A'
 # 2. Currently, the program is stuck in an infinite loop. Make use of 
 #    breakpoints to locate, and correct the error.
+# Inside the loop, at the line 'add $t1, $t2, 1' we are adding $t2 = 0, and 1. What we really want to do is increment $t1, so it should be
+# 'add $t1, $t1, 1'
 
 	.text
 
@@ -34,7 +40,8 @@ loop:
 
 con:	
 
-    add     $t1, $t2, 1	    # increase indexing register $t1
+    add     $t1, $t1, 1	    # increase indexing register $t1 <--- the bug is here. $t2 holds the number of matches; we want to increment
+# $t1, so $t2 should be $t1
 	j       loop	       	# continues the loop
 
 strEnd:
