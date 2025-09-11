@@ -7,16 +7,16 @@
 #
 # Insert your answers below each question:-
 # 1(a) What is the address location of the first element of the array, X.
-#
+# 	N is the loop count stored at 0x10010000, the first element is stored at 0x10010004
 # 1(b) What is the address location of the last element (element 7) of the array, X.
-#
+#	The last element is stored at address 0x1001000C 
 # 2.   What are the values at location 'SUM' as the program executes?
-#
+#	SUM starts at 0 and stays 0 until the loop is finished, then it is 1.
 # 3.   Traverse the program in single-step mode. Write down the intermediate 
 #      values stored in register $s1 as the program progresses.
-#
+#	These values are: 0, -2, -6, and 1. This is then stored in SUM
 # 4.   What is the purpose of register $t0 in this program?
-#
+#	$t0 holds the address for each index in the array. X[0] -> 0x10010004, X[1] -> 0x10010008, and X[2] -> 0x1001000C.
 #
 #
 .data                   	# Put Global Data here
