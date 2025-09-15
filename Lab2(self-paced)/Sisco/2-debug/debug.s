@@ -3,6 +3,10 @@
 #
 # Students: 
 #
+# Griffith 33%
+# Brandon 33% 
+# Gavin 33%
+#
 # 'count_occurence.a' - count the occurrences of a specific character in string 
 # "str". Indexed addressing is used to access the array elements.
 #  MAX Score: 15 points
