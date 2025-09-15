@@ -2,7 +2,9 @@
 # Max Score: 12 points
 #
 # Students: 
-#Griffith Wiele 100%
+# Griffith 33%
+# Brandon 33% 
+# Gavin 33%
 # minimum.s 
 # Finds the index of the smallest element in an integer array
 # V[], which contains n items.  
