@@ -1,5 +1,10 @@
 # Exercise 3
 # Max Score: 12 points
+# Students: 
+# Griffith 33%
+# Brandon 33% 
+# Gavin 33%
+
 .data	
 list1:		.word		3, 9, -1, 0, 6, 5, -4, -7, -8,  
 list2:		.word		9, 5, 0, 3, -4, 5, 6, -7, 8, 9, 
@@ -48,12 +53,12 @@ main:	addi	$sp, $sp, -4	# Make space on stack
 	li	$a0, 8
       li    $a2, 5		
 	jal	test		
-# What is the value of $v0 at this point? (v0)= _ _ _ _ _ _ _ _        #
+# What is the value of $v0 at this point? (v0)= _ _ _ _ _ _ _ _        # $v0 = 25 
 	la	$a1, list1	
 	li	$a0, 13		
 	jal	test		
-# What is the value of $v0 at this point?	(v0) = _ _ _ _ _ _ _ _       #
-# What does this code compute? Your answer HERE: _ _ _ _ _ _ _ _ _ _ _ _ #
+# What is the value of $v0 at this point?	(v0) = _ _ _ _ _ _ _ _       # $v0 = 34
+# What does this code compute? Your answer HERE: _ _ _ _ _ _ _ _ _ _ _ _ # This code computes the sum of the first n elements of the array stored at $a1, only including those that are >= $a2.
 
 return:	
 li	$v0, 0		# Return value

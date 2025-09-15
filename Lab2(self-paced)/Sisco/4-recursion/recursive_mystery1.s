@@ -1,5 +1,9 @@
 # Exercise 3
 # Max Score: 12 points
+# Students: 
+# Griffith 33%
+# Brandon 33% 
+# Gavin 33%
 .data	
 list1:		.word		3, 9, 1, 2, 6, 3, -4, -7, -8, 4, -2,  8, 7, 6
 .text 		# list1 is an array of integers storing the given sequence of values	 
@@ -40,4 +44,5 @@ li	$v0, 0			# Return value
 	jr 	$ra			# Return
 # Step through this code in your simulator and monitor the register values. 
 # What does the tomato function do?   
-# Write your answer HERE_ _ _ _ _ _ _ _ _ #                
+# Write your answer HERE_ _ _ _ _ _ _ _ _ 
+# The tomato function recursively sums the first n integers in the array stored at $a1. The final sum is 5 when it is completed.                 
