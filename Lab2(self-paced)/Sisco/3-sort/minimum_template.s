@@ -2,7 +2,7 @@
 # Max Score: 12 points
 #
 # Students: 
-#
+#Griffith Wiele 100%
 # minimum.s 
 # Finds the index of the smallest element in an integer array
 # V[], which contains n items.  
@@ -102,10 +102,24 @@ done:
 .globl MaxIndex
 
 MaxIndex:   
-    # Please fill in your implementation for 'MaxIndex' below this line !##########################
-    # Your code begins
+    lw      $t0, 0($a0)     # max=V[0]
+    addi    $t1,$0, 1       # i=1
+    add     $t3,$0, 0       # $t3=0
 
-    # Your code ends
+mloop:
+    bge     $t1,$a1,mdone    # i>=n ?
+    mul     $t2, $t1, 4     # $t2 = $t1 * 4
+    add     $t2,$t2,$a0
+    lw      $t2, 0($t2)     # $t2 = V[i]
+    ble     $t2,$t0,mnext    # V[i] <= max ?
+    add     $t0,$t2,$0      # max=V[i]
+    add     $t3,$t1,$0      # max_index=i
+mnext:
+    addi    $t1,$t1,1       # i++
+    j       mloop            # Loop back
+mdone: 
+    add     $v0,$t3,$0      # return max
+    jr      $ra
 
     
 #################### Sort function that sorts and prints the sorted array ##########################
@@ -150,7 +164,22 @@ sloop:
             # [$t3=V[$t1]] Load the value of memory address $t1 to $t3, $t3 = V[n - 1]
             # [V[$t1]=$t2] Store V[n-1] to be V[MaxIndex]
             # [V[$t0]=$t3] Store V[MaxIndex] to be the original V[n - 1]
-            # [$s0=$s0-1] Len = Len - 1    
+            # [$s0=$s0-1] Len = Len - 1  
+    move    $t0, $v0         
+    mul     $t0, $t0, 4      # offset = max_idx * 4
+    lw      $t4, 20($sp)     # reload base address A
+    add     $t0, $t0, $t4    # addr_max = base + offset
+    lw      $t2, 0($t0)      # val_max = V[max_idx]
+
+    addi    $t1, $s0, -1     # index = n - 1
+    mul     $t1, $t1, 4      # offset = (n-1)*4
+    add     $t1, $t1, $t4    # addr_last = base + offset
+    lw      $t3, 0($t1)      # val_last = V[n-1]
+
+    sw      $t2, 0($t1)      # V[n-1] = val_max
+    sw      $t3, 0($t0)      # V[max_idx] = val_last
+
+    addi    $s0, $s0, -1     # n = n - 1  
     # Your code ends
     j       sloop           # Jump back to sort loop
 
@@ -173,15 +202,15 @@ test:
     addi    $sp, $sp, -4        # Make space on stack
     sw      $ra, 0($sp)         # Save return address
 
-    jal    minimum             # call 'minimum' function
-#    jal    MaxIndex            # call 'MaxIndex' function
-    jal    print_integer       # Jump to the routine that prints the index
+    #jal    minimum             # call 'minimum' function
+    #jal    MaxIndex            # call 'MaxIndex' function
+    #jal    print_integer       # Jump to the routine that prints the index
    
 # Comment out minimum, MaxIndex and print_integer function calls and uncomment sort and 
 # print_sorted_array functions to test your sort routine.
 
-#    jal     sort                # Call sort function
-#    jal     print_array         # Call the function that prints the sorted array
+    jal     sort                # Call sort function
+    jal     print_array         # Call the function that prints the sorted array
 
 # Do not modify following lines
     lw      $ra, 0($sp)          # Restore return address
