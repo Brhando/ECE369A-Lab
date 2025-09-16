@@ -11,7 +11,7 @@ int sad(int* window, int* frame, int fRow, int fCol, int wCol, int wRow, int fRo
     int frame1DIndex;
     for(int i = 0; i < fCol; i++){
         for(int j = 0; j < fRow; j++){
-            window1DIndex = convert2dTo1dIndex(wCol, i, j); //converts the index for the window into 2D
+            window1DIndex = convert2DTo1DIndex(wCol, i, j); //converts the index for the window into 2D
             frame1DIndex = convert2DTo1DIndex(fCol, i + fRowIndex, j + fColIndex); //converts the index for the current element of the frame
             sum += abs(window[window1DIndex] - frame[frame1DIndex]);
     }     
