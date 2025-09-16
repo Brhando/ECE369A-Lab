@@ -6,7 +6,7 @@
 //takes a 1D array for window and frame, fRow and fCol are the dimensions of the frame 2D array, wCol and wRow are the dimensions of the window, and fRowIndex and fColIndex
 //are the indices of the element in the frame that the calculation is based on
 int sad(int* window, int* frame, int fRow, int fCol, int wCol, int wRow, int fRowIndex, int fColIndex){
-    int sum;
+    int sum = 0;
     int window1DIndex;
     int frame1DIndex;
     for(int i = 0; i < fCol; i++){
