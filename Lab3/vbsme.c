@@ -4,14 +4,26 @@
 
 
 
-// int sad(int* window, int* frame, int row, int col){
+// int sad(int* window, int* frame, int fRow, int fCol){
 //     int sum;
-//     for(int i = 0; i < row * col, i++;){
-//         sum = abs(window[i] - frame[i]);     
+//     for(int i = 0; i < fCol, i++;){
+//         for(int j = 0; j < fRow; j++){
+//         //sum = abs(window[i] - frame[i]);
+        
+//     }     
 //     }
 //     return sum;
 // }
 
+
+//i = col index, j = row index
+
+
+int convert2dTo1dIndex(int col, int i, int j){
+    int row1d = col * j;
+    int index1d = row1d + i;
+    return index1d; 
+}
 
 void diagSearch(int col,int  row){
     int i = 0;
