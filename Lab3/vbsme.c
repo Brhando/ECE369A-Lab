@@ -25,7 +25,7 @@ void diagSearch(int col,int  row){
         colEvenOrOdd = 1;
     
     while(i < col && j < row){
-        
+        printf( "(%d, %d) ", i, j);
         
         if( j == row - 1 && i % 2 == rowEvenOrOdd){
             i += 1;
@@ -50,7 +50,7 @@ void diagSearch(int col,int  row){
             j += -1 * polarity;
 
         }
-    printf( "(%d, %d) ", i, j);
+    
     }
     
     
@@ -58,6 +58,6 @@ void diagSearch(int col,int  row){
 
 
 int main(void){
-    diagSearch(6, 5);
+    diagSearch(8, 8);
 
 }
