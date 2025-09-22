@@ -780,6 +780,12 @@ print_result:
 vbsme:  
     li      $v0, 0              # reset $v0 and $V1
     li      $v1, 0
-
-    # insert your code here
+    lw      $t0, 0($a0)         #load value i into t0
+    add     $t4, $0, $0         #used to store the calculated SAD
+    add     $t5, $0, $0         #initialize lowest sum see to 0, we will update to the first element seen
+    addi    $t6, 1              #Used to track our polarity variable
+    
+    
+    
+    
    
