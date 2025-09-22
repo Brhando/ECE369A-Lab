@@ -780,11 +780,39 @@ print_result:
 vbsme:  
     li      $v0, 0              # reset $v0 and $V1
     li      $v1, 0
-    lw      $t0, 0($a0)         #load value i into t0
+    lw      $t0, 0($a0)         #load value i into t0; used to hold the other value (j, k, l) later
+    add     $t1, $t1, $0        #holds x coordinate
+    add     $t2, $t2, $0        #holds y coordinate
     add     $t4, $0, $0         #used to store the calculated SAD
-    add     $t5, $0, $0         #initialize lowest sum see to 0, we will update to the first element seen
+    add     $t5, $0, $0         #initialize lowest sum seen to 0, we will update to the first element seen
     addi    $t6, 1              #Used to track our polarity variable
     
+sad:
+    add $t3, $t3, $0             #holds converted (2D to 1D) index value
+    add $t7, $0, $0             #K(index)
+    add $t8, $0, $0             #L(index)
+loop1:    
+    lw  $t0, 12($a0)             #holds value of l
+    bge $t8, $t0, sreturn
+    lw $t0, 8($a0)               #holds value of k
+    bge $t7, $t0, loop1
+    add $t2, $t7, $0
+    add $t1, $t8, $0
+    lw $t0, 12($a0)
+    j twodoned
+    sll $s0, $s0, 2
+    add $s0, $s0, $a2
+    sw $s0, 0($s1)              # store value at $s0 into $s1 (window)
+    lw $t0, 4($a0)              # store value of j into $t0
+    
+     
+sreturn: 
+    jr $ra 
+    
+twodoned: 
+    mul $s0, $t2, $t0
+    add $s0, $s0, $t1 
+    jr $ra
     
     
     
