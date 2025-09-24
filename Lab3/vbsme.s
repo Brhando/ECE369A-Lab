@@ -799,7 +799,10 @@ loop1:
     add $t2, $t7, $0
     add $t1, $t8, $0
     lw $t0, 12($a0)
-    j twodoned
+    #j twodoned
+    mul $s0, $t7, $t0
+    add $s0, $s0, $t8
+    
     sll $s0, $s0, 2
     add $s0, $s0, $a2
     sw $s0, 0($s1)              # store value at $s0 into $s1 (window)
