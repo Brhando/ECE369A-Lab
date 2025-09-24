@@ -762,6 +762,8 @@ print_result:
 
 # cord x = 12, cord y = 12 returned in $v0 and $v1 registers
 
+array: .word 0, 0 
+
 .text
 .globl  vbsme
 
@@ -785,37 +787,54 @@ vbsme:
     add     $t2, $t2, $0        #holds y coordinate
     add     $t4, $0, $0         #used to store the calculated SAD
     add     $t5, $0, $0         #initialize lowest sum seen to 0, we will update to the first element seen
-    addi    $t6, 1              #Used to track our polarity variable
+    addi    $t6, $t6, 1         #Used to track our polarity variable
     
 sad:
     add $t3, $t3, $0             #holds converted (2D to 1D) index value
-    add $t7, $0, $0             #K(index)
-    add $t8, $0, $0             #L(index)
+    add $t7, $0, $0              #K(index)
+    addi $t8, $0, -1             #L(index)
 loop1:    
-    lw  $t0, 12($a0)             #holds value of l
+    lw  $t0, 12($a0)             #holds value of l (window cols)
+    addi $t8, $t8, 1             #increment L index
     bge $t8, $t0, sreturn
-    lw $t0, 8($a0)               #holds value of k
-    bge $t7, $t0, loop1
-    add $t2, $t7, $0
-    add $t1, $t8, $0
-    lw $t0, 12($a0)
-    #j twodoned
+loop2:
+    lw $t0, 8($a0)               #holds value of k (window rows)
+    bge $t7, $t0, loop1          # if (K index >= k){jump to loop 1}
+    lw $t0, 12($a0)              #load t0 with l (window cols)
+    mul $s0, $t7, $t0            # s0 = l * K index
+    add $s0, $s0, $t8            # s0 = s0 + L index
+    sll $s0, $s0, 2              # s0 = s0 * 4 (offset)
+    add $s0, $s0, $a2            #s0 = &a2[s0]
+    sw $s0, 0($s1)              # store value at $s0 into $s1[0] (window)
+    lw $t0, 4($a0)              # store value of j (frame cols) into $t0
+    add $t7, $t7, $t2           #t7 = K index + y(frame row index)
+    add $t8, $t8, $t1           #t8 = L index + x(frame col index)
     mul $s0, $t7, $t0
     add $s0, $s0, $t8
-    
-    sll $s0, $s0, 2
-    add $s0, $s0, $a2
-    sw $s0, 0($s1)              # store value at $s0 into $s1 (window)
-    lw $t0, 4($a0)              # store value of j into $t0
-    
-     
+    sub $t7, $t7, $t2           #t7 = t7 - y(frame row index)
+    sub $t8, $t8, $t1           #t8 = t8 - x(frame col index)
+    sll $s0, $s0, 2             #s0 = s0 * 4 (offset)
+    add $s0, $s0, $a1           #s0 = &a1[s0]
+    sw $s0, $s2                 #s2 = a1[s0]
+    sub $t9, $s2, $s1           #t9 = s2 - s1
+    bge $t9, $0, abs            #if positive skip next line 
+    sub $t9, $0, $t9            #find absolute value of t9
+abs:
+    add $t4, $t4, $t9           #add to total SAD
+    addi $t7, $t7, 1            #increment K index
+    j loop2 
 sreturn: 
-    jr $ra 
-    
-twodoned: 
-    mul $s0, $t2, $t0
-    add $s0, $s0, $t1 
     jr $ra
+diagsearch:
+    lw $t0, 0($a0)              #store i (frame rows) in t0
+    andi $s3, $t0, 1            #check for odd/even => if 1, number is odd
+    sw $s3, 0(array)            #store the vaule in array[0]
+    lw $t0, 4($a0)              #store j (frame cols) in t0
+    andi $s3, $t0, 1            #check odd/even
+    sw $s3, 4(array)            #store value into array[1]
+    
+    
+    
     
     
     
