@@ -787,8 +787,8 @@ vbsme:
     add     $t2, $t2, $0        #holds y coordinate
     add     $t4, $0, $0         #used to store the calculated SAD
     add     $t5, $0, $0         #initialize lowest sum seen to 0, we will update to the first element seen
-    addi    $t6, $t6, 1         #Used to track our polarity variable
-    
+    addi    $t6, $0, 1         #Used to track our polarity variable
+    j diagsearch               #start diagonal search
 sad:
     add $t3, $t3, $0             #holds converted (2D to 1D) index value
     add $t7, $0, $0              #K(index)
@@ -824,18 +824,63 @@ abs:
     addi $t7, $t7, 1            #increment K index
     j loop2 
 sreturn: 
-    jr $ra
+    j return
 diagsearch:
     lw $t0, 0($a0)              #store i (frame rows) in t0
     andi $s3, $t0, 1            #check for odd/even => if 1, number is odd
-    sw $s3, 0(array)            #store the vaule in array[0]
+    sw $s3, 0(array)            #store the value in array[0]
     lw $t0, 4($a0)              #store j (frame cols) in t0
     andi $s3, $t0, 1            #check odd/even
     sw $s3, 4(array)            #store value into array[1]
-    
-    
-    
-    
-    
-    
-   
+    addi $t6, $t6, 2147483647   #store initial lowest SAD value; set to highest positive signed number possible
+loop3:
+    lw $t0, 0($a0)          #t0 = i    
+    bge $t2, $t0, $ra      #if y > i; break the loop
+    lw $t0, 4($a0)          #t0 = j
+    bge $t1, $t0, $ra      #if x > j; break the loop
+    j sad                   #start SAD calculation
+return:
+    bge $t4, $t5, skip     #if t4 < t5 store new best sad; else skip the store
+    add $v0, $t2, $0       #v0 = y
+    add $v1, $t1, $0       #v1 = x
+    add $t5, $t4, $0       #t5 = new lowest sad value ($t4)
+skip: 
+    lw $s3, 0(array)       #s3 = odd or even (1 or 0)
+    lw $t0, 0($a0) 
+    addi $t0, $t0, -1
+    bne  $t0, $t2, else1
+    andi $s4, $t1, 1      #check if x is odd or even 1 => odd
+    bne  $s4, $s3, else1   #if both are not odd or even, jump
+    addi $t1, $t1, 1      #x = x + 1
+    sub $t6, $0, $t6      #flip polarity sign
+    j loop3
+else1:
+    lw $s3, 4(array)
+    lw $t0, 4($a0)
+    addi, $t0, $t0, -1
+    bne $t1, $t0, else2
+    andi $s4, $t2, 1      #check if y is odd
+    beq $s3, $s4, else2   # if both are odd or even, jump
+    addi $t2, $t2, 1      #y = y + 1
+    sub $t6, $0, $t6      #flip polarity sign
+    j loop3
+else2:
+    bne $t2, $0, else3    # if y != 0, jump
+    andi $s4, $t1, 1      # check if x is odd
+    bne $s4, $0, else3    # if x is odd, jump
+    addi $t1, $t1, 1      # x = x + 1
+    sub $t6, $0, $t6      # flip polarity value
+    j loop3
+else3:
+    bne $t1, $0, else4
+    andi $s4, $t1, 1
+    beq  $s4, $0, else4
+    addi $t2, $t2, 1
+    sub $t6, $0, $t6
+    j loop3
+else4:
+    add $t1, $t1, $t6    # x = x + polarity (-1 or 1) 
+    sub $t6, $0, $t6     #flip polarity sign
+    add $t2, $t2, $t6    # y = y + negative polarity
+    sub $t6, $0, $t6     #flip polarity sign 
+    j loop3 
