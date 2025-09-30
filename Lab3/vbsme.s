@@ -783,14 +783,14 @@ vbsme:
     li      $v0, 0              # reset $v0 and $V1
     li      $v1, 0
     lw      $t0, 0($a0)         #load value i into t0; used to hold the other value (j, k, l) later
-    add     $t1, $t1, $0        #holds x coordinate
-    add     $t2, $t2, $0        #holds y coordinate
+    add     $t1, $0, $0        #holds x coordinate
+    add     $t2, $0, $0        #holds y coordinate
     add     $t4, $0, $0         #used to store the calculated SAD
     add     $t5, $0, $0         #initialize lowest sum seen to 0, we will update to the first element seen
     addi    $t6, $0, 1         #Used to track our polarity variable
     j diagsearch               #start diagonal search
 sad:
-    add $t3, $t3, $0             #holds converted (2D to 1D) index value
+    add $t4, $0, $0
     add $t7, $0, $0              #K(index)
     addi $t8, $0, -1             #L(index)
 loop1:    
@@ -805,7 +805,8 @@ loop2:
     add $s0, $s0, $t8            # s0 = s0 + L index
     sll $s0, $s0, 2              # s0 = s0 * 4 (offset)
     add $s0, $s0, $a2            #s0 = &a2[s0]
-    sw $s0, 0($s1)              # store value at $s0 into $s1[0] (window)
+    #sw $s0, 0($s1)              # store value at $s0 into $s1[0] (window)gtrsghytrshytr this needs s0 to be the value not address and s1 needs to be init
+    lw $s1, 0($s0)
     lw $t0, 4($a0)              # store value of j (frame cols) into $t0
     add $t7, $t7, $t2           #t7 = K index + y(frame row index)
     add $t8, $t8, $t1           #t8 = L index + x(frame col index)
@@ -815,11 +816,12 @@ loop2:
     sub $t8, $t8, $t1           #t8 = t8 - x(frame col index)
     sll $s0, $s0, 2             #s0 = s0 * 4 (offset)
     add $s0, $s0, $a1           #s0 = &a1[s0]
-    sw $s0, $s2                 #s2 = a1[s0]
+    #sw $s0, 0($s2)                 #s2 = a1[s0] htrwhrwyhrtr56t
+    lw $s2, 0($s0)
     sub $t9, $s2, $s1           #t9 = s2 - s1
-    bge $t9, $0, abs            #if positive skip next line 
+    bge $t9, $0, abs1            #if positive skip next line 
     sub $t9, $0, $t9            #find absolute value of t9
-abs:
+abs1:
     add $t4, $t4, $t9           #add to total SAD
     addi $t7, $t7, 1            #increment K index
     j loop2 
@@ -828,16 +830,23 @@ sreturn:
 diagsearch:
     lw $t0, 0($a0)              #store i (frame rows) in t0
     andi $s3, $t0, 1            #check for odd/even => if 1, number is odd
-    sw $s3, 0(array)            #store the value in array[0]
+    la $t3, array
+    sw $s3, 0($t3)            #store the value in array[0]
     lw $t0, 4($a0)              #store j (frame cols) in t0
     andi $s3, $t0, 1            #check odd/even
-    sw $s3, 4(array)            #store value into array[1]
-    addi $t6, $t6, 2147483647   #store initial lowest SAD value; set to highest positive signed number possible
+    sw $s3, 4($t3)            #store value into array[1]
+    addi $t5, $t5, 32767   #store initial lowest SAD value; set to highest positive signed number possible
 loop3:
-    lw $t0, 0($a0)          #t0 = i    
-    bge $t2, $t0, $ra      #if y > i; break the loop
+    lw $t0, 0($a0)          #t0 = i
+    lw $s7, 8($a0)          
+    sub $t0, $t0, $s7
+    addi $t0, $t0, 1     
+    bge $t2, $t0, exit      #if y > i; break the loop
     lw $t0, 4($a0)          #t0 = j
-    bge $t1, $t0, $ra      #if x > j; break the loop
+    lw $s7, 12($a0)          
+    sub $t0, $t0, $s7
+    addi $t0, $t0, 1
+    bge $t1, $t0, exit      #if x > j; break the loop
     j sad                   #start SAD calculation
 return:
     bge $t4, $t5, skip     #if t4 < t5 store new best sad; else skip the store
@@ -845,9 +854,12 @@ return:
     add $v1, $t1, $0       #v1 = x
     add $t5, $t4, $0       #t5 = new lowest sad value ($t4)
 skip: 
-    lw $s3, 0(array)       #s3 = odd or even (1 or 0)
+    lw $s3, 0($t3)       #s3 = odd or even (1 or 0)
     lw $t0, 0($a0) 
     addi $t0, $t0, -1
+    lw $s7, 8($a0)          
+    sub $t0, $t0, $s7
+    addi $t0, $t0, 1
     bne  $t0, $t2, else1
     andi $s4, $t1, 1      #check if x is odd or even 1 => odd
     bne  $s4, $s3, else1   #if both are not odd or even, jump
@@ -855,9 +867,12 @@ skip:
     sub $t6, $0, $t6      #flip polarity sign
     j loop3
 else1:
-    lw $s3, 4(array)
+    lw $s3, 4($t3)
     lw $t0, 4($a0)
-    addi, $t0, $t0, -1
+    addi $t0, $t0, -1
+    lw $s7, 8($a0)          
+    sub $t0, $t0, $s7
+    addi $t0, $t0, 1
     bne $t1, $t0, else2
     andi $s4, $t2, 1      #check if y is odd
     beq $s3, $s4, else2   # if both are odd or even, jump
@@ -884,3 +899,5 @@ else4:
     add $t2, $t2, $t6    # y = y + negative polarity
     sub $t6, $0, $t6     #flip polarity sign 
     j loop3 
+exit: 
+    jr $ra
