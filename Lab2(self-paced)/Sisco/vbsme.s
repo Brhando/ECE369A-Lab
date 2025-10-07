@@ -1,6 +1,6 @@
 # Fall 2025
-# Team Members:    
-# % Effort    :   
+# Team Members: Brandon Sisco, Gavin Hernandez, Griffith Wiele    
+# % Effort    :   33%, 33%, 33%
 #
 # ECE369A,  
 # 
