@@ -5,10 +5,10 @@
 // 
 //
 //
-// Student(s) Name and Last Name: FILL IN YOUR INFO HERE!
+// Student(s) Name and Last Name: Brandon Sisco, Griffith Wiele, and Gavin Hernandez
 //
 //
-// Module - register_file.v
+// Module - RegisterFile.v
 // Description - Implements a register file with 32 32-Bit wide registers.
 //
 // 
@@ -47,9 +47,37 @@
 // change for a pre-specified time before the falling edge of the clock arrives 
 // to allow for data multiplexing and setup time.
 ////////////////////////////////////////////////////////////////////////////////
+	module RegisterFile(
+    input  wire [4:0]  ReadRegister1,
+    input  wire [4:0]  ReadRegister2,
+    input  wire [4:0]  WriteRegister,
+    input  wire [31:0] WriteData,
+    input  wire        RegWrite,
+    input  wire        Clk,
+    output reg  [31:0] ReadData1,
+    output reg  [31:0] ReadData2
+	);
 
-module RegisterFile(ReadRegister1, ReadRegister2, WriteRegister, WriteData, RegWrite, Clk, ReadData1, ReadData2);
+    // 32 x 32-bit storage
+    reg [31:0] regs [31:0];
 
-	/* Please fill in the implementation here... */
+    integer i;
+    initial begin
+        for (i = 0; i < 32; i = i + 1)
+            regs[i] = 32'b0;
+    end
+
+    // Synchronous WRITE on posedge; $zero is immutable
+    always @(posedge Clk) begin
+        if (RegWrite && (WriteRegister != 5'd0))
+            regs[WriteRegister] <= WriteData;
+        regs[5'd0] <= 32'b0; // keep $zero hard-wired
+    end
+
+    // REGISTERED READ on negedge
+    always @(negedge Clk) begin
+        ReadData1 <= (ReadRegister1 == 5'd0) ? 32'b0 : regs[ReadRegister1];
+        ReadData2 <= (ReadRegister2 == 5'd0) ? 32'b0 : regs[ReadRegister2];
+    end
 
 endmodule
