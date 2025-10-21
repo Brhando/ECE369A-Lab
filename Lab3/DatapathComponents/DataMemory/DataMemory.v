@@ -43,8 +43,27 @@ module DataMemory(Address, WriteData, Clk, MemWrite, MemRead, ReadData);
     input MemWrite; 		// Control signal for memory write 
     input MemRead; 			// Control signal for memory read 
 
+    // 1K x 32-bit memory array
+    reg [31:0] mem [0:1023]; 
+    // Word address index (drop the low 2 bits for byte addressing)
+    wire [9:0] word_addr = Address[11:2];
+    
     output reg[31:0] ReadData; // Contents of memory location at Address
 
-    /* Please fill in the implementation here */
+    // Synchronous write
+    always @(posedge Clk) begin
+        if (MemWrite) begin
+            mem[word_addr] <= WriteData;
+        end
+    end
+
+    //Asynchronous read
+    always @* begin
+        if (MemRead) begin
+            ReadData = mem[word_addr];
+        end else begin
+            ReadData = 32'h0000_0000;
+        end
+    end
 
 endmodule
