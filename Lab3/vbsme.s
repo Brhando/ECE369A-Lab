@@ -1,6 +1,6 @@
 # Fall 2025
-# Team Members:    
-# % Effort    :   
+# Team Members: Brandon Sisco, Gavin Hernandez, Griffith Wiele    
+# % Effort    :   33%, 33%, 33%
 #
 # ECE369A,  
 # 
@@ -762,8 +762,18 @@ print_result:
 
 # cord x = 12, cord y = 12 returned in $v0 and $v1 registers
 
-array: .word 0, 0 
+########################################################################################################################
+### data (scratch)
+########################################################################################################################
+.data
+.align 2
+# array[0] = row parity flag (1 if odd number of rows to scan)
+# array[1] = column parity helper (1 if EVEN number of cols to scan)
+array:  .word 0, 0
 
+########################################################################################################################
+### code
+########################################################################################################################
 .text
 .globl  vbsme
 
@@ -779,125 +789,158 @@ array: .word 0, 0
 
 
 # Begin subroutine
-vbsme:  
-    li      $v0, 0              # reset $v0 and $V1
+vbsme:
+    # outputs (row=y in v0, col=x in v1)
+    li      $v0, 0
     li      $v1, 0
-    lw      $t0, 0($a0)         #load value i into t0; used to hold the other value (j, k, l) later
-    add     $t1, $0, $0        #holds x coordinate
-    add     $t2, $0, $0        #holds y coordinate
-    add     $t4, $0, $0         #used to store the calculated SAD
-    add     $t5, $0, $0         #initialize lowest sum seen to 0, we will update to the first element seen
-    addi    $t6, $0, 1         #Used to track our polarity variable
-    j diagsearch               #start diagonal search
+
+    # current position
+    add     $t1, $zero, $zero     # x
+    add     $t2, $zero, $zero     # y
+    addi    $t6, $zero, 1         # direction: +1 = up-right, -1 = down-left
+
+    # last valid indices (inclusive)
+    # row_max = i - k
+    # col_max = j - l
+    lw      $s6, 0($a0)           # i
+    lw      $s7, 8($a0)           # k
+    sub     $s6, $s6, $s7         # row_max
+
+    lw      $s7, 4($a0)           # j
+    lw      $s5, 12($a0)          # l
+    sub     $s5, $s7, $s5         # col_max
+
+    j       diagsearch
+
+########################################################################################################################
+# SAD(y=$t2, x=$t1)
+########################################################################################################################
 sad:
-    add $t4, $0, $0
-    add $t7, $0, $0              #K(index)
-    addi $t8, $0, -1             #L(index)
-loop1:    
-    lw  $t0, 12($a0)             #holds value of l (window cols)
-    addi $t8, $t8, 1             #increment L index
-    bge $t8, $t0, sreturn
+    add     $t4, $zero, $zero     # running SAD
+    add     $t7, $zero, $zero     # K (row within window)
+    addi    $t8, $zero, -1        # L (col within window), will ++ first
+
+loop1:
+    lw      $t0, 12($a0)          # l
+    addi    $t8, $t8, 1
+    bge     $t8, $t0, sreturn     # done all L
+    add     $t7, $zero, $zero     # K = 0 for next col
+
 loop2:
-    lw $t0, 8($a0)               #holds value of k (window rows)
-    bge $t7, $t0, loop1          # if (K index >= k){jump to loop 1}
-    lw $t0, 12($a0)              #load t0 with l (window cols)
-    mul $s0, $t7, $t0            # s0 = l * K index
-    add $s0, $s0, $t8            # s0 = s0 + L index
-    sll $s0, $s0, 2              # s0 = s0 * 4 (offset)
-    add $s0, $s0, $a2            #s0 = &a2[s0]
-    #sw $s0, 0($s1)              # store value at $s0 into $s1[0] (window)gtrsghytrshytr this needs s0 to be the value not address and s1 needs to be init
-    lw $s1, 0($s0)
-    lw $t0, 4($a0)              # store value of j (frame cols) into $t0
-    add $t7, $t7, $t2           #t7 = K index + y(frame row index)
-    add $t8, $t8, $t1           #t8 = L index + x(frame col index)
-    mul $s0, $t7, $t0
-    add $s0, $s0, $t8
-    sub $t7, $t7, $t2           #t7 = t7 - y(frame row index)
-    sub $t8, $t8, $t1           #t8 = t8 - x(frame col index)
-    sll $s0, $s0, 2             #s0 = s0 * 4 (offset)
-    add $s0, $s0, $a1           #s0 = &a1[s0]
-    #sw $s0, 0($s2)                 #s2 = a1[s0] htrwhrwyhrtr56t
-    lw $s2, 0($s0)
-    sub $t9, $s2, $s1           #t9 = s2 - s1
-    bge $t9, $0, abs1            #if positive skip next line 
-    sub $t9, $0, $t9            #find absolute value of t9
+    lw      $t0, 8($a0)           # k
+    bge     $t7, $t0, loop1       # next L if K==k
+
+    # window[K][L]
+    lw      $t0, 12($a0)          # l
+    mul     $s0, $t7, $t0         # K*l
+    add     $s0, $s0, $t8         # + L
+    sll     $s0, $s0, 2
+    add     $s0, $s0, $a2
+    lw      $s1, 0($s0)           # s1 = window[K][L]
+
+    # frame[y+K][x+L]
+    lw      $t0, 4($a0)           # j (frame cols)
+    add     $t9, $t7, $t2         # y+K
+    add     $s2, $t8, $t1         # x+L
+    mul     $s0, $t9, $t0         # (y+K)*j
+    add     $s0, $s0, $s2         # + (x+L)
+    sll     $s0, $s0, 2
+    add     $s0, $s0, $a1
+    lw      $s2, 0($s0)           # s2 = frame[y+K][x+L]
+
+    # |frame - window|
+    sub     $t9, $s2, $s1
+    bge     $t9, $zero, abs1
+    sub     $t9, $zero, $t9
 abs1:
-    add $t4, $t4, $t9           #add to total SAD
-    addi $t7, $t7, 1            #increment K index
-    j loop2 
-sreturn: 
-    j return
+    add     $t4, $t4, $t9
+
+    addi    $t7, $t7, 1           # K++
+    j       loop2
+
+sreturn:
+    j       return
+
+########################################################################################################################
+# Precompute flags 
+########################################################################################################################
 diagsearch:
-    lw $t0, 0($a0)              #store i (frame rows) in t0
-    andi $s3, $t0, 1            #check for odd/even => if 1, number is odd
-    la $t3, array
-    sw $s3, 0($t3)            #store the value in array[0]
-    lw $t0, 4($a0)              #store j (frame cols) in t0
-    andi $s3, $t0, 1            #check odd/even
-    sw $s3, 4($t3)            #store value into array[1]
-    addi $t5, $t5, 32767   #store initial lowest SAD value; set to highest positive signed number possible
+    # rows_to_scan = i - k + 1   -> parity flag (1 if odd)
+    lw      $t0, 0($a0)          # i
+    lw      $t3, 8($a0)          # k (reuse $t3 temporarily)
+    sub     $t0, $t0, $t3
+    addi    $t0, $t0, 1
+    andi    $s3, $t0, 1          # row parity (1 = odd)
+
+    la      $t3, array
+    sw      $s3, 0($t3)          # array[0] = row parity
+
+    # cols_to_scan = j - l + 1 -> store 1 if EVEN (not used by edge logic now)
+    lw   $t0, 4($a0)             # j
+    lw   $t9, 12($a0)            # l
+    sub  $t0, $t0, $t9
+    addi $t0, $t0, 1
+    andi $s3, $t0, 1             # 1 if ODD, 0 if EVEN
+    xori $s3, $s3, 1             # flip => 1 if EVEN, 0 if ODD
+    sw   $s3, 4($t3)             # array[1]
+
+    li      $t5, 0x7fffffff      # bestSAD = +inf
+
 loop3:
-    lw $t0, 0($a0)          #t0 = i
-    lw $s7, 8($a0)          
-    sub $t0, $t0, $s7
-    addi $t0, $t0, 1     
-    bge $t2, $t0, exit      #if y > i; break the loop
-    lw $t0, 4($a0)          #t0 = j
-    lw $s7, 12($a0)          
-    sub $t0, $t0, $s7
-    addi $t0, $t0, 1
-    bge $t1, $t0, exit      #if x > j; break the loop
-    j sad                   #start SAD calculation
+    j       sad                   # compute SAD at (y,x)
+
+########################################################################################################################
+# After SAD: update best and advance along the required diagonal pattern
+########################################################################################################################
 return:
-    bge $t4, $t5, skip     #if t4 < t5 store new best sad; else skip the store
-    add $v0, $t2, $0       #v0 = y
-    add $v1, $t1, $0       #v1 = x
-    add $t5, $t4, $0       #t5 = new lowest sad value ($t4)
-skip: 
-    lw $s3, 0($t3)       #s3 = odd or even (1 or 0)
-    lw $t0, 0($a0) 
-    addi $t0, $t0, -1
-    lw $s7, 8($a0)          
-    sub $t0, $t0, $s7
-    addi $t0, $t0, 1
-    bne  $t0, $t2, else1
-    andi $s4, $t1, 1      #check if x is odd or even 1 => odd
-    bne  $s4, $s3, else1   #if both are not odd or even, jump
-    addi $t1, $t1, 1      #x = x + 1
-    sub $t6, $0, $t6      #flip polarity sign
-    j loop3
-else1:
-    lw $s3, 4($t3)
-    lw $t0, 4($a0)
-    addi $t0, $t0, -1
-    lw $s7, 8($a0)          
-    sub $t0, $t0, $s7
-    addi $t0, $t0, 1
-    bne $t1, $t0, else2
-    andi $s4, $t2, 1      #check if y is odd
-    beq $s3, $s4, else2   # if both are odd or even, jump
-    addi $t2, $t2, 1      #y = y + 1
-    sub $t6, $0, $t6      #flip polarity sign
-    j loop3
-else2:
-    bne $t2, $0, else3    # if y != 0, jump
-    andi $s4, $t1, 1      # check if x is odd
-    bne $s4, $0, else3    # if x is odd, jump
-    addi $t1, $t1, 1      # x = x + 1
-    sub $t6, $0, $t6      # flip polarity value
-    j loop3
-else3:
-    bne $t1, $0, else4
-    andi $s4, $t1, 1
-    beq  $s4, $0, else4
-    addi $t2, $t2, 1
-    sub $t6, $0, $t6
-    j loop3
+    # If new best (<=), capture
+    bgt     $t4, $t5, skip
+    add     $v0, $t2, $zero       # row (y)
+    add     $v1, $t1, $zero       # col (x)
+    add     $t5, $t4, $zero       # bestSAD = curSAD
+skip:
+    # Finished?
+    beq     $t2, $s6, chk_last_col
+    j       cont_edges
+chk_last_col:
+    beq     $t1, $s5, exit
+
+# ---------- FIXED EDGE LOGIC (direction-driven, no parity pitfalls) ----------
+cont_edges:
+    # If moving up-right (t6 = +1)
+    bltz    $t6, dl_move             # if t6 < 0, we're moving down-left
+
+    # Top edge? -> move right, flip direction
+    bne     $t2, $zero, not_top_ur
+    addi    $t1, $t1, 1              # x++
+    sub     $t6, $zero, $t6          # flip to down-left
+    j       loop3
+not_top_ur:
+    # Right edge? -> move down, flip direction
+    bne     $t1, $s5, else4
+    addi    $t2, $t2, 1              # y++
+    sub     $t6, $zero, $t6          # flip to down-left
+    j       loop3
+
+dl_move:
+    # Moving down-left (t6 = -1)
+    # Bottom edge? -> move right, flip direction
+    bne     $t2, $s6, not_bottom_dl
+    addi    $t1, $t1, 1              # x++
+    sub     $t6, $zero, $t6          # flip to up-right
+    j       loop3
+not_bottom_dl:
+    # Left edge? -> move down, flip direction
+    bne     $t1, $zero, else4
+    addi    $t2, $t2, 1              # y++
+    sub     $t6, $zero, $t6          # flip to up-right
+    j       loop3
+
+# Interior diagonal step (keep direction)
 else4:
-    add $t1, $t1, $t6    # x = x + polarity (-1 or 1) 
-    sub $t6, $0, $t6     #flip polarity sign
-    add $t2, $t2, $t6    # y = y + negative polarity
-    sub $t6, $0, $t6     #flip polarity sign 
-    j loop3 
-exit: 
-    jr $ra
+    add     $t1, $t1, $t6            # x += dir
+    sub     $t2, $t2, $t6            # y -= dir
+    j       loop3
+
+exit:
+    jr      $ra
