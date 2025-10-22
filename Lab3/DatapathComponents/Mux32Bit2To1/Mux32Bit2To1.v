@@ -14,7 +14,12 @@ module Mux32Bit2To1(out, inA, inB, sel);
     input [31:0] inA;
     input [31:0] inB;
     input sel;
-
-    /* Fill in the implementation here ... */ 
+    
+    always @(*) begin
+        case (sel)
+            1'b0: out = inA;
+            1'b1: out = inB;
+        endcase
+    end
 
 endmodule
