@@ -69,7 +69,8 @@ module Controller(
   localparam ALU_AND=4'b0000, ALU_OR =4'b0001, ALU_ADD=4'b0010,
              ALU_XOR=4'b0011, ALU_NOR=4'b0100, ALU_SLL=4'b0101,
              ALU_SUB=4'b0110, ALU_SLT=4'b0111, ALU_SRL=4'b1000,
-             ALU_MUL=4'b1001;
+             ALU_MUL=4'b1001, ALU_SGTB=4'b1010, ALU_SLTB=4'b1011,
+             ALU_BEQ=4'b1100, ALU_BNE=4'b1101;
 
   // Defaults helper
   task set_defaults;
@@ -148,10 +149,10 @@ module Controller(
       end
 
       // Branches
-      OP_BEQ: begin Branch=1'b1; BranchType=BT_BEQ; ALUControl=ALU_SUB; end
-      OP_BNE: begin Branch=1'b1; BranchType=BT_BNE; ALUControl=ALU_SUB; end
-      OP_BLEZ:begin Branch=1'b1; BranchType=BT_BLEZ; ALUControl=ALU_SUB; end
-      OP_BGTZ:begin Branch=1'b1; BranchType=BT_BGTZ; ALUControl=ALU_SUB; end
+      OP_BEQ: begin Branch=1'b1; BranchType=BT_BEQ; ALUControl=ALU_BEQ; end
+      OP_BNE: begin Branch=1'b1; BranchType=BT_BNE; ALUControl=ALU_BNE; end
+      OP_BLEZ:begin Branch=1'b1; BranchType=BT_BLEZ; ALUControl=ALU_SLTB; end
+      OP_BGTZ:begin Branch=1'b1; BranchType=BT_BGTZ; ALUControl=ALU_SGTB; end
 
       OP_REGIMM: begin
         // rt selects BLTZ/BGEZ
@@ -159,6 +160,11 @@ module Controller(
         case (rt)
           5'b00000: BranchType = BT_BLTZ; // bltz
           5'b00001: BranchType = BT_BGEZ; // bgez
+          if(BranchType == BT_BLTZ) begin
+            ALUControl = ALU_SLTB;
+          end else if (BranchType == BT_BGEZ) begin
+            ALUControl = ALU_SGTB;
+          end 
           default:  Branch = 1'b0; // unsupported REGIMM variants
         endcase
       end
