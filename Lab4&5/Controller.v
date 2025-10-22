@@ -1,4 +1,6 @@
 // Controller for MIPS subset (ECE369A Labs 4-5)
+// Brandon Sisco, Gavin Hernandez, Griffith Wiele
+// 33%, 33%, 33%
 // - Outputs cover WB/MEM/EX/Branch/Jump controls
 // - 4-bit ALUControl (textbook mapping)
 // - Byte/Half load/store via MemSize/MemSign
@@ -40,17 +42,17 @@ module Controller(
   // wire [4:0] shamt = instr[10:6]; // used in datapath when ALUSrc==10
 
   // Opcodes
-  localparam OP_RTYPE = 6'h00;
-  localparam OP_J     = 6'h02, OP_JAL  = 6'h03;
-  localparam OP_BEQ   = 6'h04, OP_BNE  = 6'h05;
-  localparam OP_BLEZ  = 6'h06, OP_BGTZ = 6'h07;
-  localparam OP_ADDI  = 6'h08, OP_SLTI = 6'h0A;
-  localparam OP_ANDI  = 6'h0C, OP_ORI  = 6'h0D, OP_XORI = 6'h0E;
-  localparam OP_LB    = 6'h20, OP_LH   = 6'h21;
-  localparam OP_LW    = 6'h23;
-  localparam OP_SB    = 6'h28, OP_SH   = 6'h29;
-  localparam OP_SW    = 6'h2B;
-  localparam OP_REGIMM= 6'h01; // BLTZ/BGEZ via rt field
+  localparam OP_RTYPE = 6'h00;// 0
+  localparam OP_J     = 6'h02, OP_JAL  = 6'h03; // 2 or 3
+  localparam OP_BEQ   = 6'h04, OP_BNE  = 6'h05; // 4 or 5
+  localparam OP_BLEZ  = 6'h06, OP_BGTZ = 6'h07; // 6 or 7
+  localparam OP_ADDI  = 6'h08, OP_SLTI = 6'h0A; // 8 or 10
+  localparam OP_ANDI  = 6'h0C, OP_ORI  = 6'h0D, OP_XORI = 6'h0E; // 12 or 13 or 14
+  localparam OP_LB    = 6'h20, OP_LH   = 6'h21; //32 or 33
+  localparam OP_LW    = 6'h23; // 35
+  localparam OP_SB    = 6'h28, OP_SH   = 6'h29; // 40 or 41
+  localparam OP_SW    = 6'h2B; // 43
+  localparam OP_REGIMM= 6'h01; // BLTZ/BGEZ via rt field (decimal 1)
 
   // RT (funct)
   localparam F_ADD=6'h20, F_SUB=6'h22, F_AND=6'h24, F_OR=6'h25, F_XOR=6'h26, F_NOR=6'h27;
@@ -94,7 +96,7 @@ module Controller(
 
     case (op)
 
-      // ---------------- R-TYPE ----------------
+      //R-TYPE
       OP_RTYPE: begin
         case (funct)
           F_ADD: begin
@@ -136,7 +138,7 @@ module Controller(
         endcase
       end
 
-      // ---------------- J / JAL ----------------
+      // J / JAL 
       OP_J:   begin Jump = 1'b1; end
       OP_JAL: begin
         Jump      = 1'b1;
@@ -145,7 +147,7 @@ module Controller(
         MemToReg  = 2'b10;  // PC+8 path in WB mux
       end
 
-      // ---------------- Branches ----------------
+      // Branches
       OP_BEQ: begin Branch=1'b1; BranchType=BT_BEQ; ALUControl=ALU_SUB; end
       OP_BNE: begin Branch=1'b1; BranchType=BT_BNE; ALUControl=ALU_SUB; end
       OP_BLEZ:begin Branch=1'b1; BranchType=BT_BLEZ; ALUControl=ALU_SUB; end
@@ -161,7 +163,7 @@ module Controller(
         endcase
       end
 
-      // ---------------- Immediates ----------------
+      // Immediates
       OP_ADDI: begin
         RegWrite   = 1'b1; RegDst=2'b00; MemToReg=2'b00;
         ALUSrc     = 2'b01; ExtOp=1'b1; ALUControl=ALU_ADD;
@@ -183,7 +185,7 @@ module Controller(
         ALUSrc     = 2'b01; ExtOp=1'b0; ALUControl=ALU_XOR; // zero-extend
       end
 
-      // ---------------- Loads ----------------
+      // Loads
       OP_LW: begin
         RegWrite=1'b1; RegDst=2'b00; MemToReg=2'b01;
         MemRead =1'b1; MemSize=2'b00; MemSign=1'b1;
@@ -200,7 +202,7 @@ module Controller(
         ALUSrc  =2'b01; ExtOp=1'b1; ALUControl=ALU_ADD;
       end
 
-      // ---------------- Stores ----------------
+      // Stores
       OP_SW: begin
         MemWrite=1'b1; MemSize=2'b00;
         ALUSrc  =2'b01; ExtOp=1'b1; ALUControl=ALU_ADD;
