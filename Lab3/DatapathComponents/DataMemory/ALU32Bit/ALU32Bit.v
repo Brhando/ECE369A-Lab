@@ -75,7 +75,7 @@ module ALU32Bit(ALUControl, A, B, ALUResult, ConFlag, Hi, Lo);
     4'd6: ALUResult = A - B;
     
     //slt: slt
-    4'd7: ALUResult = (A < B) ? 32'd1 : 32'd0;
+    4'd7:  ALUResult = ($signed(A) < $signed(B)) ? 32'd1 : 32'd0;
 
     //srl: srl ( B is original number, A is shift amount )
     4'd8: ALUResult = B >> A[4:0];
@@ -88,10 +88,10 @@ module ALU32Bit(ALUControl, A, B, ALUResult, ConFlag, Hi, Lo);
     end
     
     //sgtb: bgez (A = register input, B = -1), bgtz (A = register input, B = 0) 
-    4'd10: ConFlag = (A > B);
+    4'd10: ConFlag   = ($signed(A) > $signed(B));
 
     //sltb: blez (A = register input, B = 1), bltz (A = register input, B = 0)
-    4'd11: ConFlag = (A < B);
+    4'd11: ConFlag   = ($signed(A) < $signed(B));
     
     
     //seqb: beq
