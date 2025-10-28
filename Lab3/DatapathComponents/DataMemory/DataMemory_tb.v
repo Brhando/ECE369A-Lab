@@ -200,10 +200,10 @@ module DataMemory_tb();
 	    read_byte_expect(A0+3, 1'b0, 32'h0000_00AA);
 		
 	    // sign-extend (AA, BB have MSB=1 → FFFF_00xx)
-	    read_byte_expect(A0+0, 1'b1, (8'hDD[7] ? {24'hFF_FFFF, 8'hDD} : {24'h0, 8'hDD}));
-	    read_byte_expect(A0+1, 1'b1, (8'hCC[7] ? {24'hFF_FFFF, 8'hCC} : {24'h0, 8'hCC}));
-	    read_byte_expect(A0+2, 1'b1, (8'hBB[7] ? {24'hFF_FFFF, 8'hBB} : {24'h0, 8'hBB}));
-	    read_byte_expect(A0+3, 1'b1, (8'hAA[7] ? {24'hFF_FFFF, 8'hAA} : {24'h0, 8'hAA}));
+	    read_byte_expect(A0+0, 1'b1, 32'hFFFF_FFDD);
+        read_byte_expect(A0+1, 1'b1, 32'hFFFF_FFCC);
+        read_byte_expect(A0+2, 1'b1, 32'hFFFF_FFBB);
+        read_byte_expect(A0+3, 1'b1, 32'hFFFF_FFAA);
 	
 	    // HALF LOADS from 0xAABB_CCDD at A0 
 	    // A0 lower half = CCDD; A0+2 upper half = AABB
