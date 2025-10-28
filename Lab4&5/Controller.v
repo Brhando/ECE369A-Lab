@@ -155,18 +155,21 @@ module Controller(
       OP_BGTZ:begin Branch=1'b1; BranchType=BT_BGTZ; ALUControl=ALU_SGTB; end
 
       OP_REGIMM: begin
-        // rt selects BLTZ/BGEZ
-        Branch = 1'b1; ALUControl = ALU_SUB;
-        case (rt)
-          5'b00000: BranchType = BT_BLTZ; // bltz
-          5'b00001: BranchType = BT_BGEZ; // bgez
-          if(BranchType == BT_BLTZ) begin
-            ALUControl = ALU_SLTB;
-          end else if (BranchType == BT_BGEZ) begin
-            ALUControl = ALU_SGTB;
-          end 
-          default:  Branch = 1'b0; // unsupported REGIMM variants
-        endcase
+      // rt selects BLTZ/BGEZ
+      Branch = 1'b1;
+      case (rt)
+        5'b00000: begin // BLTZ
+          BranchType = BT_BLTZ;
+          ALUControl = ALU_SLTB; // ALU compares rs < 0 / rs < rt(=0) per design
+        end
+        5'b00001: begin // BGEZ
+          BranchType = BT_BGEZ;
+          ALUControl = ALU_SGTB; // ALU compares rs >= 0 (or rs > -1), per design
+        end
+        default: begin
+          Branch = 1'b0; // unsupported REGIMM -> do nothing
+        end
+      endcase
       end
 
       // Immediates
