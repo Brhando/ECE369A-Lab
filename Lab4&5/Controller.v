@@ -6,7 +6,7 @@
 // - Byte/Half load/store via MemSize/MemSign
 // - Uses 2-bit RegDst, 2-bit MemToReg, 2-bit ALUSrc
 //   RegDst: 00=rt, 01=rd, 10=$ra
-//   MemToReg: 00=ALU, 01=DM, 10=PC+8
+//   MemToReg: 00=ALU, 01=DM, 10=PC+4
 //   ALUSrc: 00=rt, 01=imm, 10=shamt
 
 module Controller(
