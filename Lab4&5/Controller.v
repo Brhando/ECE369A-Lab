@@ -145,7 +145,7 @@ module Controller(
         Jump      = 1'b1;
         RegWrite  = 1'b1;
         RegDst    = 2'b10;  // $ra
-        MemToReg  = 2'b10;  // PC+8 path in WB mux
+        MemToReg  = 2'b10;  // PC+4 path in WB mux
       end
 
       // Branches
