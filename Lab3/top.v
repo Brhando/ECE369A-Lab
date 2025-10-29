@@ -34,8 +34,14 @@ module top(
     wire MemSign, Branch;
     wire [2:0] BranchType;
     wire Jump, JumpReg;
-    wire ClkDiv;
-    
+    wire clkdiv;
+    wire [31:0] WriteData_WB;
+    wire        RegWrite_WB;
+    wire [1:0]  MemToReg_WB;
+    wire [31:0] ReadData_WB;
+    wire [31:0] ALUResult_WB;
+    wire [31:0] PCPlus4_WB;
+    wire [4:0]  DestReg_WB;
     
     wire [31:0] PC, Instr;
     InstructionMemory instructionMemory(
@@ -48,21 +54,67 @@ module top(
     wire [31:0] PCNext;
     wire BranchTaken;
     wire Zero;
-    wire Flush;
-    assign Flush = BranchTaken || Jump_EX || JumpReg_EX;
-    
-    
-    ClkDiv clock_divider(
-    .Clk(clk),
-    .Rst(rst),
-    .ClkDiv(ClkDiv)
-);
+     
+    wire        RegWrite_EX;
+    wire [1:0]  MemToReg_EX;
+    wire        MemRead_EX;
+    wire        MemWrite_EX;
+    wire [1:0]  MemSize_EX;
+    wire        MemSign_EX;
+    wire        Branch_EX;
+    wire [2:0]  BranchType_EX;
+    wire        Jump_EX;
+    wire        JumpReg_EX;
+    wire [1:0]  ALUSrc_EX;
+    wire [3:0]  ALUControl_EX;
+    wire [1:0]  RegDst_EX;
 
+    wire [31:0] ReadData1_EX;
+    wire [31:0] ReadData2_EX;
+    wire [31:0] ImmExt_EX;
+    wire [4:0]  rs_EX, rt_EX, rd_EX;
+    wire [4:0]  shamt_EX;
+    wire [31:0] PCPlus4_EX;
+    wire [25:0] instr_index_EX;
+    wire [31:0] ALUB;
+    wire        RegWrite_MEM;
+wire [1:0]  MemToReg_MEM;
+wire        MemRead_MEM;
+wire        MemWrite_MEM;
+wire [1:0]  MemSize_MEM;
+wire        MemSign_MEM;
+wire        Branch_MEM;
+wire [2:0]  BranchType_MEM;
+wire        Jump_MEM;
+wire        JumpReg_MEM;
+wire [31:0] ALUResult_MEM;
+wire        Zero_MEM;
+wire [31:0] WriteData_MEM;
+wire [4:0]  DestReg_MEM;
+wire [31:0] BranchTarget_MEM;
+wire [31:0] JumpTarget_MEM;
+wire [31:0] PCPlus4_MEM;
+wire [31:0] Immediate;
+wire [31:0] ReadData1, ReadData2;
+wire [4:0] WriteReg_EX;
+wire [31:0] ALUResult_EX;
+wire [31:0] ReadData_MEM;
+wire Flush;    
+
+    assign Flush = (Branch_EX && BranchTaken) || Jump_EX || JumpReg_EX;
+    
+     
+//    ClkDiv clock_divider(
+//    .Clk(clk),
+//    .Rst(rst),
+//    .ClkOut(clkdiv)
+//);
+    assign clkdiv = clk;
 
     IF_ID_Reg IFID(
-        .Clk(ClkDiv),
+        .Clk(clkdiv),
         .Reset(rst),
-        //Stall
+        .Stall(1'b0),
         .Flush(Flush),
         .PC_in(PCPlus4),
         .Instr_in(Instr),
@@ -70,20 +122,20 @@ module top(
         .Instr_out(ID_Instr)
     );
     
-    wire [31:0] ReadData1, ReadData2;
+    
     
     RegisterFile RF(
         .ReadRegister1(ID_Instr[25:21]),
         .ReadRegister2(ID_Instr[20:16]),
         .WriteRegister(DestReg_WB),
         .WriteData(WriteData_WB),
-        .Clk(ClkDiv),
+        .Clk(clkdiv),
         .ReadData1(ReadData1),
         .ReadData2(ReadData2),
         .RegWrite(RegWrite_WB)
     );
     
-    wire [31:0] Immediate;
+    
      
     SignExtension SE(
         .in(ID_Instr[15:0]),
@@ -92,7 +144,7 @@ module top(
     );
     
     ProgramCounter PCount(
-    .clk(ClkDiv),
+    .clk(clkdiv),
     .rst(rst),
     .PCNext(PCNext),
     .PC(PC)
@@ -119,30 +171,10 @@ module top(
     );
 
 
-    wire        RegWrite_EX;
-    wire [1:0]  MemToReg_EX;
-    wire        MemRead_EX;
-    wire        MemWrite_EX;
-    wire [1:0]  MemSize_EX;
-    wire        MemSign_EX;
-    wire        Branch_EX;
-    wire [2:0]  BranchType_EX;
-    wire        Jump_EX;
-    wire        JumpReg_EX;
-    wire [1:0]  ALUSrc_EX;
-    wire [3:0]  ALUControl_EX;
-    wire [1:0]  RegDst_EX;
-
-    wire [31:0] ReadData1_EX;
-    wire [31:0] ReadData2_EX;
-    wire [31:0] ImmExt_EX;
-    wire [4:0]  rs_EX, rt_EX, rd_EX;
-    wire [4:0]  shamt_EX;
-    wire [31:0] PCPlus4_EX;
-    wire [25:0] instr_index_EX;
+   
 
     ID_EX_Reg IDEX(
-        .Clk(ClkDiv),
+        .Clk(clkdiv),
         .Reset(rst),
         .Flush(Flush),
         .instr_index_in(ID_Instr[25:0]),
@@ -194,7 +226,7 @@ module top(
     );
    
     // EX Stage: ALU B Mux (3-to-1)
-wire [31:0] ALUB;
+
 
 assign ALUB = 
     (ALUSrc_EX == 2'b00) ? ReadData2_EX :
@@ -206,7 +238,7 @@ assign ALUB =
 
 
 
-wire [31:0] ALUResult_EX;
+
 
 ALU32Bit alu(
     .A(ReadData1_EX),
@@ -234,7 +266,7 @@ NextPC nextpc(
 );
     
     
-    wire [4:0] WriteReg_EX;
+    
 
 assign WriteReg_EX = 
     (RegDst_EX == 2'b00) ? rt_EX :      // I-type uses rt
@@ -243,27 +275,18 @@ assign WriteReg_EX =
     5'd0;                                // default
 
 // Declare EX/MEM pipeline register output wires
-wire        RegWrite_MEM;
-wire [1:0]  MemToReg_MEM;
-wire        MemRead_MEM;
-wire        MemWrite_MEM;
-wire [1:0]  MemSize_MEM;
-wire        MemSign_MEM;
-wire        Branch_MEM;
-wire [2:0]  BranchType_MEM;
-wire        Jump_MEM;
-wire        JumpReg_MEM;
-wire [31:0] ALUResult_MEM;
-wire        Zero_MEM;
-wire [31:0] WriteData_MEM;
-wire [4:0]  DestReg_MEM;
-wire [31:0] BranchTarget_MEM;
-wire [31:0] JumpTarget_MEM;
-wire [31:0] PCPlus4_MEM;
 
+
+
+//    wire        RegWrite_WB;
+//    wire [1:0]  MemToReg_WB;
+//    wire [31:0] ReadData_WB;
+//    wire [31:0] ALUResult_WB;
+//    wire [31:0] PCPlus4_WB;
+//    wire [4:0]  DestReg_WB;
 // EX/MEM Register instantiation
 EX_MEM_Reg EXMEM(
-    .Clk(ClkDiv),
+    .Clk(clkdiv),
     .Reset(rst),
     .Flush(1'b0),  // Connect to your flush logic later if needed
     
@@ -312,12 +335,12 @@ EX_MEM_Reg EXMEM(
     
 );
 
-   wire [31:0] ReadData_MEM;
+   
 
 DataMemory DM(
     .Address(ALUResult_MEM),
     .WriteData(WriteData_MEM),
-    .Clk(ClkDiv),
+    .Clk(clkdiv),
     .MemWrite(MemWrite_MEM),
     .MemRead(MemRead_MEM),
     .MemSize(MemSize_MEM),      
@@ -326,16 +349,11 @@ DataMemory DM(
 );
     
     
-    wire        RegWrite_WB;
-    wire [1:0]  MemToReg_WB;
-    wire [31:0] ReadData_WB;
-    wire [31:0] ALUResult_WB;
-    wire [31:0] PCPlus4_WB;
-    wire [4:0]  DestReg_WB;
+
 
 
     MEM_WB_Reg MEMWB(
-    .Clk(ClkDiv),
+    .Clk(clkdiv),
     .Reset(rst),
     
     // Control signals in
@@ -359,7 +377,7 @@ DataMemory DM(
     .DestReg_out(DestReg_WB)
 );
 
-wire [31:0] WriteData_WB;
+
 
     assign WriteData_WB = 
         (MemToReg_WB == 2'b00) ? ALUResult_WB :   // Arithmetic/logic instructions
