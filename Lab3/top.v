@@ -21,8 +21,8 @@
 
 
 module top(
-    input wire clk,
-    input wire rst,
+    input wire Clk,
+    input wire Reset,
     output wire [31:0] PC_out,
     output wire [31:0] Data_out
     );
@@ -105,15 +105,15 @@ wire Flush;
     
      
 //    ClkDiv clock_divider(
-//    .Clk(clk),
-//    .Rst(rst),
+//    .Clk(Clk),
+//    .Rst(Reset),
 //    .ClkOut(clkdiv)
 //);
-    assign clkdiv = clk;
+    assign clkdiv = Clk;
 
     IF_ID_Reg IFID(
         .Clk(clkdiv),
-        .Reset(rst),
+        .Reset(Reset),
         .Stall(1'b0),
         .Flush(Flush),
         .PC_in(PCPlus4),
@@ -145,7 +145,7 @@ wire Flush;
     
     ProgramCounter PCount(
     .clk(clkdiv),
-    .rst(rst),
+    .rst(Reset),
     .PCNext(PCNext),
     .PC(PC)
     );
@@ -175,7 +175,7 @@ wire Flush;
 
     ID_EX_Reg IDEX(
         .Clk(clkdiv),
-        .Reset(rst),
+        .Reset(Reset),
         .Flush(Flush),
         .instr_index_in(ID_Instr[25:0]),
         .RegWrite_in(RegWrite),
@@ -287,7 +287,7 @@ assign WriteReg_EX =
 // EX/MEM Register instantiation
 EX_MEM_Reg EXMEM(
     .Clk(clkdiv),
-    .Reset(rst),
+    .Reset(Reset),
     .Flush(1'b0),  // Connect to your flush logic later if needed
     
     // WB control signals
@@ -354,7 +354,7 @@ DataMemory DM(
 
     MEM_WB_Reg MEMWB(
     .Clk(clkdiv),
-    .Reset(rst),
+    .Reset(Reset),
     
     // Control signals in
     .RegWrite_in(RegWrite_MEM),

@@ -11,8 +11,8 @@ module top_tb();
     
     // Instantiate the Device Under Test (DUT)
     top DUT(
-        .clk(clk),
-        .rst(rst),
+        .Clk(clk),
+        .Reset(rst),
         .PC_out(PC_out),
         .Data_out(Data_out)
     );
