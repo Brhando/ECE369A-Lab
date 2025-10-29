@@ -26,7 +26,7 @@
 //   operations needed to support. 
 ////////////////////////////////////////////////////////////////////////////////
 
-module ALU32Bit(ALUControl, A, B, ALUResult, ConFlag, Hi, Lo);
+module ALU32Bit(ALUControl, A, B, ALUResult, Zero, Hi, Lo);
 
 	input [3:0] ALUControl; // control bits for ALU operation
                                 // you need to adjust the bitwidth as needed
@@ -35,8 +35,8 @@ module ALU32Bit(ALUControl, A, B, ALUResult, ConFlag, Hi, Lo);
 	output reg [31:0] ALUResult;	// answer
 	output reg [31:0] Hi;
 	output reg [31:0] Lo;
-	output reg ConFlag; //1 bit register used to store output for conditionals
-
+	output wire Zero; //1 bit register used to store output for conditionals
+    assign Zero = (ALUResult == 32'd0) ? 1'b1 : 1'b0;
 
     reg [63:0] temp64;
     /* Please fill in the implementation here... */
@@ -45,7 +45,7 @@ module ALU32Bit(ALUControl, A, B, ALUResult, ConFlag, Hi, Lo);
         ALUResult = A;
         Hi = 0;
         Lo = 0;
-        ConFlag = 0;
+        
         
         
         
@@ -85,27 +85,13 @@ module ALU32Bit(ALUControl, A, B, ALUResult, ConFlag, Hi, Lo);
         temp64 = $signed(A) * $signed(B);
         Hi = temp64[63:32];
         Lo = temp64[31:0];
-    end
-    
-    //sgtb: bgez (A = register input, B = -1), bgtz (A = register input, B = 0) 
-    4'd10: ConFlag   = ($signed(A) > $signed(B));
-
-    //sltb: blez (A = register input, B = 1), bltz (A = register input, B = 0)
-    4'd11: ConFlag   = ($signed(A) < $signed(B));
-    
-    
-    //seqb: beq
-    4'd12: ConFlag = (A == B);
-    
-    //sneb: bne
-    4'd13: ConFlag = ( A != B);
-    
+    end   
     
     default: begin 
     ALUResult = 0; 
     Hi = 0; 
     Lo = 0; 
-    ConFlag = 0; 
+    
     end
     endcase
 end
