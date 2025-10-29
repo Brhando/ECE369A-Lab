@@ -20,7 +20,7 @@ module top_tb();
     // Clock generation - 10ns period (100MHz)
     initial begin
         clk = 0;
-        forever #5 clk = ~clk;
+        forever #10 clk = ~clk;
     end
     
     // Test stimulus
