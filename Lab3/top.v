@@ -23,9 +23,10 @@
 module top(
     input wire Clk,
     input wire Reset,
-    output wire [31:0] PC_out,
-    output wire [31:0] Data_out
+    output wire [6:0] out7,
+    output wire [7:0] en_out
     );
+    wire [31:0] PC_out, Data_out;
     wire RegWrite, MemRead;
     wire [1:0] RegDst, MemToReg, ALUSrc;
     wire [3:0] ALUControl;
@@ -103,13 +104,20 @@ wire Flush;
 
     assign Flush = (Branch_EX && BranchTaken) || Jump_EX || JumpReg_EX;
     
+     Two4DigitDisplay TDD(
+     .NumberA(PC_out[15:0]),
+     .NumberB(Data_out[15:0]),
+     .Clk(Clk),
+     .out7(out7),
+     .en_out(en_out)
+     );
      
-//    ClkDiv clock_divider(
-//    .Clk(Clk),
-//    .Rst(Reset),
-//    .ClkOut(clkdiv)
-//);
-    assign clkdiv = Clk;
+    ClkDiv clock_divider(
+    .Clk(Clk),
+    .Rst(Reset),
+    .ClkOut(clkdiv)
+);
+
 
     IF_ID_Reg IFID(
         .Clk(clkdiv),
