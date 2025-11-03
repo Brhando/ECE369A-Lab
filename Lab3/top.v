@@ -412,5 +412,5 @@ DataMemory DM(
     
     
     assign PC_out = PC;
-    assign Data_out = WriteData_WB;
+    assign Data_out = RegWrite_WB ? WriteData_WB : 32'b0;
 endmodule
