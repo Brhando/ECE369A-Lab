@@ -77,6 +77,7 @@ module top(
     wire [4:0]  shamt_EX;
     wire [31:0] PCPlus4_EX;
     wire [25:0] instr_index_EX;
+    wire [31:0] ALUA;
     wire [31:0] ALUB;
     wire        RegWrite_MEM;
 wire [1:0]  MemToReg_MEM;
@@ -239,7 +240,9 @@ reg [31:0] Hi_reg, Lo_reg;       // Hi/Lo registers (stored values)
    
     // EX Stage: ALU B Mux (3-to-1)
 
-
+assign ALUA =
+    (ALUSrc_EX == 2'b10) ? ReadData2_EX :   // shifts: A <- rt (value to shift)
+                           ReadData1_EX;    // normal ops: A <- rs
 assign ALUB = 
     (ALUSrc_EX == 2'b00) ? ReadData2_EX :
     (ALUSrc_EX == 2'b01) ? ImmExt_EX :
@@ -253,7 +256,7 @@ assign ALUB =
 
 
 ALU32Bit alu(
-    .A(ReadData1_EX),
+    .A(ALUA),
     .B(ALUB),
     .ALUControl(ALUControl_EX),
     .ALUResult(ALUResult_EX),
