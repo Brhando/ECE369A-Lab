@@ -102,6 +102,10 @@ wire [31:0] ALUResult_EX;
 wire [31:0] ReadData_MEM;
 wire Flush;    
 
+wire [31:0] Hi_out, Lo_out;      // Outputs from ALU
+reg [31:0] Hi_reg, Lo_reg;       // Hi/Lo registers (stored values)
+
+
     assign Flush = (Branch_EX && BranchTaken) || Jump_EX || JumpReg_EX;
     
      Two4DigitDisplay TDD(
@@ -253,8 +257,21 @@ ALU32Bit alu(
     .B(ALUB),
     .ALUControl(ALUControl_EX),
     .ALUResult(ALUResult_EX),
-    .Zero(Zero)
+    .Zero(Zero),
+    .Hi(Hi_out),
+    .Lo(Lo_out)
 );
+
+always @(posedge clkdiv) begin
+    if (Reset) begin
+        Hi_reg <= 32'b0;
+        Lo_reg <= 32'b0;
+    end
+    else begin
+        Hi_reg <= Hi_out;
+        Lo_reg <= Lo_out;
+    end
+end
 
 // NextPC instantiation
 NextPC nextpc(
