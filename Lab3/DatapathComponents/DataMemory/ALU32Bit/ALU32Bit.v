@@ -67,8 +67,8 @@ module ALU32Bit(ALUControl, A, B, ALUResult, Zero, Hi, Lo);
     //nor: nor
     4'd4: ALUResult = ~(A | B);
 
-    //sll: sll ( B is original number, A is shift amount )
-    4'd5: ALUResult = B << A[4:0];
+    //sll: sll 
+    4'd5: ALUResult = A << B[4:0];  // SLL
 
     
     //sub: sub
@@ -77,8 +77,8 @@ module ALU32Bit(ALUControl, A, B, ALUResult, Zero, Hi, Lo);
     //slt: slt
     4'd7:  ALUResult = ($signed(A) < $signed(B)) ? 32'd1 : 32'd0;
 
-    //srl: srl ( B is original number, A is shift amount )
-    4'd8: ALUResult = B >> A[4:0];
+    //srl: srl 
+    4'd8: ALUResult = A >> B[4:0];  // SRL
     
     //mult: mult
     4'd9: begin 
