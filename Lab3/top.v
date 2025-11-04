@@ -24,9 +24,11 @@ module top(
     input wire Clk,
     input wire Reset,
     output wire [6:0] out7,
-    output wire [7:0] en_out
+    output wire [7:0] en_out,
+    output wire [31:0] PC_out,
+    output wire [31:0] Data_out
     );
-    wire [31:0] PC_out, Data_out;
+    //wire [31:0] PC_out, Data_out;
     wire RegWrite, MemRead;
     wire [1:0] RegDst, MemToReg, ALUSrc;
     wire [3:0] ALUControl;
