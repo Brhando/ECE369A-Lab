@@ -48,6 +48,16 @@ module DataMemory(Address, WriteData, Clk, MemWrite, MemRead, MemSize, MemSign, 
     // 1K x 32-bit memory array
     reg [31:0] mem [0:1023];
     
+    integer i;
+    initial begin
+    // Initialize all memory locations to 0
+    for (i = 0; i < 1024; i = i + 1)
+        mem[i] = 32'h0000_0000;
+    
+    // Load initial data values from file
+    $readmemh("data_memory.mem", mem);
+end
+
     // Word address index (drop the low 2 bits for byte addressing)
     wire [9:0] word_addr = Address[11:2];
     
