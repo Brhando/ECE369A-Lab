@@ -85,6 +85,7 @@ module ALU32Bit(ALUControl, A, B, ALUResult, Zero, Hi, Lo);
         temp64 = $signed(A) * $signed(B);
         Hi = temp64[63:32];
         Lo = temp64[31:0];
+        ALUResult = Lo;
     end   
     
     default: begin 
