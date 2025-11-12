@@ -101,7 +101,8 @@ module top(
     wire [4:0] WriteReg_EX;
     wire [31:0] ALUResult_EX;
     wire [31:0] ReadData_MEM;
-    wire Flush;    
+    wire Flush;
+    wire [1:0] ForwardA, ForwardB, ForwardStore; //forwarding wires
     
     wire [31:0] Hi_out, Lo_out;      // Outputs from ALU
     reg [31:0] Hi_reg, Lo_reg;       // Hi/Lo registers (stored values)
@@ -121,9 +122,20 @@ module top(
     .Clk(Clk),
     .Rst(Reset),
     .ClkOut(clkdiv)
-);
+    );
 
-
+    ForwardingUnit fwd(
+    .RegWrite_MEM(RegWrite_MEM),
+    .DestReg_MEM (DestReg_MEM),
+    .RegWrite_WB (RegWrite_WB),
+    .DestReg_WB  (DestReg_WB),
+    .rs_EX       (rs_EX),
+    .rt_EX       (rt_EX),
+    .ForwardA    (ForwardA),
+    .ForwardB    (ForwardB),
+    .ForwardStore(ForwardStore)
+    );
+    
     IF_ID_Reg IFID(
         .Clk(clkdiv),
         .Reset(Reset),
