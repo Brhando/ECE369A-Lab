@@ -82,34 +82,34 @@ module top(
     wire [31:0] ALUA;
     wire [31:0] ALUB;
     wire        RegWrite_MEM;
-wire [1:0]  MemToReg_MEM;
-wire        MemRead_MEM;
-wire        MemWrite_MEM;
-wire [1:0]  MemSize_MEM;
-wire        MemSign_MEM;
-wire        Branch_MEM;
-wire [2:0]  BranchType_MEM;
-wire        Jump_MEM;
-wire        JumpReg_MEM;
-wire [31:0] ALUResult_MEM;
-wire        Zero_MEM;
-wire [31:0] WriteData_MEM;
-wire [4:0]  DestReg_MEM;
-wire [31:0] BranchTarget_MEM;
-wire [31:0] JumpTarget_MEM;
-wire [31:0] PCPlus4_MEM;
-wire [31:0] Immediate;
-wire [31:0] ReadData1, ReadData2;
-wire [4:0] WriteReg_EX;
-wire [31:0] ALUResult_EX;
-wire [31:0] ReadData_MEM;
-wire Flush;    
+    wire [1:0]  MemToReg_MEM;
+    wire        MemRead_MEM;
+    wire        MemWrite_MEM;
+    wire [1:0]  MemSize_MEM;
+    wire        MemSign_MEM;
+    wire        Branch_MEM;
+    wire [2:0]  BranchType_MEM;
+    wire        Jump_MEM;
+    wire        JumpReg_MEM;
+    wire [31:0] ALUResult_MEM;
+    wire        Zero_MEM;
+    wire [31:0] WriteData_MEM;
+    wire [4:0]  DestReg_MEM;
+    wire [31:0] BranchTarget_MEM;
+    wire [31:0] JumpTarget_MEM;
+    wire [31:0] PCPlus4_MEM;
+    wire [31:0] Immediate;
+    wire [31:0] ReadData1, ReadData2;
+    wire [4:0] WriteReg_EX;
+    wire [31:0] ALUResult_EX;
+    wire [31:0] ReadData_MEM;
+    wire Flush;    
+    
+    wire [31:0] Hi_out, Lo_out;      // Outputs from ALU
+    reg [31:0] Hi_reg, Lo_reg;       // Hi/Lo registers (stored values)
 
-wire [31:0] Hi_out, Lo_out;      // Outputs from ALU
-reg [31:0] Hi_reg, Lo_reg;       // Hi/Lo registers (stored values)
 
-
-    assign Flush = (Branch_EX && BranchTaken) || Jump_EX || JumpReg_EX;
+    assign Flush = (Branch && BranchTaken) || Jump || JumpReg;
     
      Two4DigitDisplay TDD(
      .NumberA(PC_out[15:0]),
@@ -149,6 +149,25 @@ reg [31:0] Hi_reg, Lo_reg;       // Hi/Lo registers (stored values)
         .ReadData2(ReadData2),
         .RegWrite(RegWrite_WB)
     );
+
+    // ---------- ID-stage bypass for branch compare & JR ----------
+    wire [4:0] ID_rs = ID_Instr[25:21];
+    wire [4:0] ID_rt = ID_Instr[20:16];
+
+    // Minimal WB→ID bypass (works for most cases)
+    wire [31:0] ID_rs_wb =
+        (RegWrite_WB && DestReg_WB != 5'd0 && DestReg_WB == ID_rs) ? WriteData_WB : ReadData1;
+    wire [31:0] ID_rt_wb =
+        (RegWrite_WB && DestReg_WB != 5'd0 && DestReg_WB == ID_rt) ? WriteData_WB : ReadData2;
+
+    // (Recommended) also include EX/MEM→ID for truly fresh ALU results
+    wire [31:0] ID_rs_fwd =
+        (RegWrite_MEM && DestReg_MEM != 5'd0 && DestReg_MEM == ID_rs) ? ALUResult_MEM : ID_rs_wb;
+    wire [31:0] ID_rt_fwd =
+        (RegWrite_MEM && DestReg_MEM != 5'd0 && DestReg_MEM == ID_rt) ? ALUResult_MEM : ID_rt_wb;
+
+    // Equality used by BEQ/BNE (ID-stage)
+    wire Zero_ID = (ID_rs_fwd == ID_rt_fwd);
     
     
      
@@ -191,7 +210,7 @@ reg [31:0] Hi_reg, Lo_reg;       // Hi/Lo registers (stored values)
     ID_EX_Reg IDEX(
         .Clk(clkdiv),
         .Reset(Reset),
-        .Flush(Flush),
+        .Flush(1'b0),
         .instr_index_in(ID_Instr[25:0]),
         .RegWrite_in(RegWrite),
         .MemToReg_in(MemToReg),
@@ -250,12 +269,6 @@ assign ALUB =
     (ALUSrc_EX == 2'b01) ? ImmExt_EX :
     (ALUSrc_EX == 2'b10) ? {27'b0, shamt_EX} :
     32'b0;  // default
-    
-    
-
-
-
-
 
 ALU32Bit alu(
     .A(ALUA),
@@ -281,16 +294,16 @@ end
 // NextPC instantiation
 NextPC nextpc(
     .PC(PC),
-    .PCPlus4(PCPlus4_EX),
-    .rs_val(ReadData1_EX),          // rs value for jr instruction
-    .imm_ext(ImmExt_EX),            // sign-extended immediate
-    .instr_index(instr_index_EX),   // for j/jal instructions
-    .Branch(Branch_EX),
-    .BranchType(BranchType_EX),
-    .Jump(Jump_EX),
-    .JumpReg(JumpReg_EX),
-    .Zero(Zero),
-    .ALUResult(ALUResult_EX),
+    .PCPlus4(ID_PCPlus4),
+    .rs_val(ID_rs_fwd),          // rs value for jr instruction
+    .imm_ext(Immediate),            // sign-extended immediate
+    .instr_index(ID_Instr[25:0]),   // for j/jal instructions
+    .Branch(Branch),
+    .BranchType(BranchType),
+    .Jump(Jump),
+    .JumpReg(JumpReg),
+    .Zero(Zero_ID),
+    .ALUResult(ID_rs_fwd),                  
     .PCNext(PCNext),
     .BranchTaken(BranchTaken)
 );
