@@ -111,6 +111,12 @@ module top(
     wire [31:0] BranchTarget_MEM;
     wire [31:0] JumpTarget_MEM;
     wire [31:0] PCPlus4_MEM;
+    
+    // Forwarding / hazard wires
+    wire [1:0] ForwardA, ForwardB;
+    wire       PCWrite;
+    wire       IF_ID_Write;
+    wire       ID_EX_Flush;
 
     // Other signals
     wire [31:0] Immediate;
@@ -125,7 +131,8 @@ module top(
     reg  [31:0] Hi_reg, Lo_reg;
 
     // Flush logic (control resolved in ID stage)
-    assign Flush = (Branch && BranchTaken) || Jump || JumpReg;
+    // Only flush when we're not stalling due to a hazard
+    assign Flush = PCWrite && ((Branch && BranchTaken) || Jump || JumpReg);
 
     // Display
     Two4DigitDisplay TDD(
@@ -147,7 +154,7 @@ module top(
     IF_ID_Reg IFID(
         .Clk(clkdiv),
         .Reset(Reset),
-        .Stall(1'b0),
+        .Stall(~IF_ID_Write), // 1 = stall
         .Flush(Flush),
         .PC_in(PCPlus4),
         .Instr_in(Instr),
@@ -167,13 +174,11 @@ module top(
         .RegWrite(RegWrite_WB)
     );
 
-    // ------------------------------------------------------------
     // ID-stage bypass for branch and JR
-    // ------------------------------------------------------------
     wire [4:0] ID_rs = ID_Instr[25:21];
     wire [4:0] ID_rt = ID_Instr[20:16];
 
-    // WB  ID forwarding
+    // WB/ID forwarding
     wire [31:0] ID_rs_wb =
         (RegWrite_WB && DestReg_WB != 5'd0 && DestReg_WB == ID_rs) ?
             WriteData_WB : ReadData1;
@@ -183,13 +188,16 @@ module top(
             WriteData_WB : ReadData2;
 
     // EX/MEM  ID forwarding
+    wire [31:0] mem_result_for_id =
+        (MemToReg_MEM == 2'b01) ? ReadData_MEM : ALUResult_MEM;
+
     wire [31:0] ID_rs_fwd =
         (RegWrite_MEM && DestReg_MEM != 5'd0 && DestReg_MEM == ID_rs) ?
-            ALUResult_MEM : ID_rs_wb;
+            mem_result_for_id : ID_rs_wb;
 
     wire [31:0] ID_rt_fwd =
         (RegWrite_MEM && DestReg_MEM != 5'd0 && DestReg_MEM == ID_rt) ?
-            ALUResult_MEM : ID_rt_wb;
+            mem_result_for_id : ID_rt_wb;
 
     // BEQ/BNE compare in ID stage
     wire Zero_ID = (ID_rs_fwd == ID_rt_fwd);
@@ -202,10 +210,13 @@ module top(
     );
 
     // Program Counter
+    wire [31:0] PCNext_stall;
+    assign PCNext_stall = PCWrite ? PCNext : PC;  // if stall, hold PC
+
     ProgramCounter PCount(
         .clk(clkdiv),
         .rst(Reset),
-        .PCNext(PCNext),
+        .PCNext(PCNext_stall),
         .PC(PC)
     );
 
@@ -228,14 +239,11 @@ module top(
         .JumpReg(JumpReg)
     );
 
-    // ------------------------------------------------------------
     // ID/EX Pipeline Register
-    // ------------------------------------------------------------
     ID_EX_Reg IDEX(
         .Clk(clkdiv),
         .Reset(Reset),
-        .Flush(1'b0),
-
+        .Flush(ID_EX_Flush | Flush), //flush on load-use hazard OR on branches/jumps
         .instr_index_in(ID_Instr[25:0]),
         .RegWrite_in(RegWrite),
         .MemToReg_in(MemToReg),
@@ -284,16 +292,54 @@ module top(
         .shamt_out(shamt_EX),
         .PCPlus4_out(PCPlus4_EX)
     );
+    
+    // Forwarding Unit
+    ForwardingUnit fwd(
+        .RegWrite_MEM(RegWrite_MEM),
+        .DestReg_MEM(DestReg_MEM),
+        .RegWrite_WB(RegWrite_WB),
+        .DestReg_WB(DestReg_WB),
+        .rs_EX(rs_EX),
+        .rt_EX(rt_EX),
+        .ForwardA(ForwardA),
+        .ForwardB(ForwardB)
+    );
 
-    // ------------------------------------------------------------
-    // EX Stage ALU
-    // ------------------------------------------------------------
+    // Hazard Detection (load-use stall)
+    HazardDetectionUnit hdu(
+        .MemRead_EX(MemRead_EX),
+        .rt_EX(rt_EX),
+        .ID_rs(ID_rs),
+        .ID_rt(ID_rt),
+        .PCWrite(PCWrite),
+        .IF_ID_Write(IF_ID_Write),
+        .ID_EX_Flush(ID_EX_Flush)
+    );
+
+    // EX Stage ALU (with forwarding)
+    wire [31:0] srcA_EX = ReadData1_EX;
+    wire [31:0] srcB_EX = ReadData2_EX;
+
+    wire [31:0] fwdA_EX =
+        (ForwardA == 2'b00) ? srcA_EX :
+        (ForwardA == 2'b10) ? ALUResult_MEM :
+        (ForwardA == 2'b01) ? WriteData_WB :
+                              srcA_EX;
+
+    wire [31:0] fwdB_EX =
+        (ForwardB == 2'b00) ? srcB_EX :
+        (ForwardB == 2'b10) ? ALUResult_MEM :
+        (ForwardB == 2'b01) ? WriteData_WB :
+                              srcB_EX;
+
+    // Preserve original ALUSrc behavior, but applied to the
+    // forwarded operands instead of the raw register values
     assign ALUA =
-        (ALUSrc_EX == 2'b10) ? ReadData2_EX : 
-                               ReadData1_EX;
+        (ALUSrc_EX == 2'b10) ? fwdB_EX :  // for variable shifts etc.
+                               fwdA_EX;
 
     assign ALUB =
-        (ALUSrc_EX == 2'b00) ? ReadData2_EX :
+        (ALUSrc_EX == 2'b00) ? fwdB_EX :
         (ALUSrc_EX == 2'b01) ? ImmExt_EX :
         (ALUSrc_EX == 2'b10) ? {27'b0, shamt_EX} :
                                32'b0;
@@ -319,9 +365,7 @@ module top(
         end
     end
 
-    // ------------------------------------------------------------
     // NextPC Unit
-    // ------------------------------------------------------------
     NextPC nextpc(
         .PC(PC),
         .PCPlus4(ID_PCPlus4),
@@ -344,9 +388,7 @@ module top(
         (RegDst_EX == 2'b10) ? 5'd31 :
                                5'd0;
 
-    // ------------------------------------------------------------
     // EX/MEM Pipeline Register
-    // ------------------------------------------------------------
     EX_MEM_Reg EXMEM(
         .Clk(clkdiv),
         .Reset(Reset),
@@ -366,7 +408,7 @@ module top(
 
         .ALUResult_in(ALUResult_EX),
         .ConFlag_in(Zero),
-        .WriteData_in(ReadData2_EX),
+        .WriteData_in(fwdB_EX),
         .DestReg_in(WriteReg_EX),
         .BranchTarget_in(32'b0),
         .JumpTarget_in(32'b0),
@@ -391,9 +433,7 @@ module top(
         .PCPlus4_out(PCPlus4_MEM)
     );
 
-    // ------------------------------------------------------------
     // Data Memory
-    // ------------------------------------------------------------
     DataMemory DM(
         .Address(ALUResult_MEM),
         .WriteData(WriteData_MEM),
@@ -405,9 +445,7 @@ module top(
         .ReadData(ReadData_MEM)
     );
 
-    // ------------------------------------------------------------
     // MEM/WB Pipeline Register
-    // ------------------------------------------------------------
     MEM_WB_Reg MEMWB(
         .Clk(clkdiv),
         .Reset(Reset),
@@ -429,9 +467,7 @@ module top(
         .DestReg_out(DestReg_WB)
     );
 
-    // ------------------------------------------------------------
     // Writeback mux
-    // ------------------------------------------------------------
     assign WriteData_WB =
         (MemToReg_WB == 2'b00) ? ALUResult_WB :
         (MemToReg_WB == 2'b01) ? ReadData_WB :
