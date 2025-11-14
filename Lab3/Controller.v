@@ -53,6 +53,7 @@ module Controller(
   localparam OP_SB    = 6'h28, OP_SH   = 6'h29; // 40 or 41
   localparam OP_SW    = 6'h2B; // 43
   localparam OP_REGIMM= 6'h01; // BLTZ/BGEZ via rt field (decimal 1)
+  localparam OP_SPECIAL2 = 6'h1C; // for mul, etc.
 
   // RT (funct)
   localparam F_ADD=6'h20, F_SUB=6'h22, F_AND=6'h24, F_OR=6'h25, F_XOR=6'h26, F_NOR=6'h27;
@@ -138,6 +139,22 @@ module Controller(
           end
         endcase
       end
+      
+      OP_SPECIAL2: begin
+      // SPECIAL2 encodes mul as funct = 0x02
+      case (funct)
+        6'h02: begin   // mul rd, rs, rt
+          RegWrite   = 1'b1;
+          RegDst     = 2'b01;     // write to rd
+          MemToReg   = 2'b00;     // from ALU
+          ALUSrc     = 2'b00;     // B = rt
+          ALUControl = ALU_MUL;   // 4'b1001 -> mul case in ALU
+        end
+        default: begin
+          // unsupported SPECIAL2 funct -> do nothing
+        end
+      endcase
+    end
 
       // J / JAL 
       OP_J:   begin Jump = 1'b1; end
@@ -154,32 +171,17 @@ module Controller(
       OP_BLEZ:begin Branch=1'b1; BranchType=BT_BLEZ; ALUControl=ALU_SUB; end
       OP_BGTZ:begin Branch=1'b1; BranchType=BT_BGTZ; ALUControl=ALU_SUB; end
 
-      OP_REGIMM: begin
-      // rt selects BLTZ/BGEZ
-      Branch = 1'b1;
-//      case (rt)
-//        5'b00000: begin // BLTZ
-//          BranchType = BT_BLTZ;
-//          ALUControl = ALU_SLTB; // ALU compares rs < 0 / rs < rt(=0) per design
-//        end
-//        5'b00001: begin // BGEZ
-//          BranchType = BT_BGEZ;
-//          ALUControl = ALU_SGTB; // ALU compares rs >= 0 (or rs > -1), per design
-//        end
-//        default: begin
-//          Branch = 1'b0; // unsupported REGIMM -> do nothing
-//        end
-//      endcase
-//      end
-    Branch = 1'b1;
-    ALUSrc = 2'b00;
-    ALUControl = 4'd6;  // SUB
-    case (rt)
-        5'b00000: BranchType = BT_BLTZ;
-        5'b00001: BranchType = BT_BGEZ;
-        default: Branch = 1'b0;
-    endcase
-end
+     OP_REGIMM: begin
+        Branch   = 1'b1;
+        ALUSrc   = 2'b00;      // rs vs 0
+        ALUControl = ALU_SUB;  // not actually used for condition in NextPC
+    
+        case (rt)
+            5'b00000: BranchType = BT_BLTZ; // BLTZ
+            5'b00001: BranchType = BT_BGEZ; // BGEZ
+            default:  Branch     = 1'b0;    // unsupported
+        endcase
+     end
 
       // Immediates
       OP_ADDI: begin

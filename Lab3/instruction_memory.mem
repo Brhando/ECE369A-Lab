@@ -1,113 +1,294 @@
-20080000	//	main:		addi	$t0, $zero, 0 ->	main:		addi	$t0, $zero, 0
+20040000	//	main:		addi	$a0, $zero, 0 ->	main:		addi	$a0, $zero, 0
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+2008000a	//			addi	$t0, $zero, 10 ->			addi	$t0, $zero, 10
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
 00000000	//			nop ->			nop
 20090006	//			addi	$t1, $zero, 6 ->			addi	$t1, $zero, 6
 00000000	//			nop ->			nop
-200a000a	//			addi	$t2, $zero, 10 ->			addi	$t2, $zero, 10
-00000000	//			nop ->			nop
-ad090000	//			sw	$t1, 0($t0) ->			sw	$t1, 0($t0)
-00000000	//			nop ->			nop
-ad0a0004	//			sw	$t2, 4($t0) ->			sw	$t2, 4($t0)
-00000000	//			nop ->			nop
-8d100000	//			lw	$s0, 0($t0) ->			lw	$s0, 0($t0)
-00000000	//			nop ->			nop
-8d110004	//			lw	$s1, 4($t0) ->			lw	$s1, 4($t0)
-00000000	//			nop ->			nop
-02305822	//			sub	$t3, $s1, $s0 ->			sub	$t3, $s1, $s0
-00000000	//			nop ->			nop
-000b60c0	//			sll	$t4, $t3, 3 ->			sll	$t4, $t3, 3
-00000000	//			nop ->			nop
-000c6882	//			srl	$t5, $t4, 2 ->			srl	$t5, $t4, 2
-00000000	//			nop ->			nop
-012a7020	//			add	$t6, $t1, $t2 ->			add	$t6, $t1, $t2
-00000000	//			nop ->			nop
-012a7824	//			and	$t7, $t1, $t2 ->			and	$t7, $t1, $t2
-00000000	//			nop ->			nop
-012ac025	//			or	$t8, $t1, $t2 ->			or	$t8, $t1, $t2
-00000000	//			nop ->			nop
-012ac826	//			xor	$t9, $t1, $t2 ->			xor	$t9, $t1, $t2
-00000000	//			nop ->			nop
-012ab827	//			nor	$s7, $t1, $t2 ->			nor	$s7, $t1, $t2
-00000000	//			nop ->			nop
-012a902a	//			slt	$s2, $t1, $t2 ->			slt	$s2, $t1, $t2
-00000000	//			nop ->			nop
-20130006	//			addi	$s3, $zero, 6 ->			addi	$s3, $zero, 6
-00000000	//			nop ->			nop
-3274ff80	//			andi	$s4, $s3, 0xFF80 ->			andi	$s4, $s3, 0xFF80
-00000000	//			nop ->			nop
-36758001	//			ori	$s5, $s3, 0x8001 ->			ori	$s5, $s3, 0x8001
-00000000	//			nop ->			nop
-3a7600ff	//			xori	$s6, $s3, 0x00FF ->			xori	$s6, $s3, 0x00FF
-00000000	//			nop ->			nop
-29340008	//			slti	$s4, $t1, 8 ->			slti	$s4, $t1, 8
-00000000	//			nop ->			nop
-2001aabb	//			addi	$at, $zero, 0xAABB ->			addi	$at, $zero, 0xAABB
-00000000	//			nop ->			nop
-00010c00	//			sll	$at, $at, 16 ->			sll	$at, $at, 16
-00000000	//			nop ->			nop
-3421ccdd	//			ori	$at, $at, 0xCCDD ->			ori	$at, $at, 0xCCDD
-00000000	//			nop ->			nop
-ad010008	//			sw	$at, 8($t0) ->			sw	$at, 8($t0)
-00000000	//			nop ->			nop
-81100000	//			lb	$s0, 0($t0) ->			lb	$s0, 0($t0)
-00000000	//			nop ->			nop
-81110008	//			lb	$s1, 8($t0) ->			lb	$s1, 8($t0)
-00000000	//			nop ->			nop
-81120009	//			lb	$s2, 9($t0) ->			lb	$s2, 9($t0)
-00000000	//			nop ->			nop
-8113000a	//			lb	$s3, 10($t0) ->			lb	$s3, 10($t0)
-00000000	//			nop ->			nop
-8114000b	//			lb	$s4, 11($t0) ->			lb	$s4, 11($t0)
-00000000	//			nop ->			nop
-85150008	//			lh	$s5, 8($t0) ->			lh	$s5, 8($t0)
-00000000	//			nop ->			nop
-8516000a	//			lh	$s6, 10($t0) ->			lh	$s6, 10($t0)
-00000000	//			nop ->			nop
-a1000009	//			sb	$zero, 9($t0) ->			sb	$zero, 9($t0)
-00000000	//			nop ->			nop
-a509000a	//			sh	$t1, 10($t0) ->			sh	$t1, 10($t0)
-00000000	//			nop ->			nop
-8d170008	//			lw	$s7, 8($t0) ->			lw	$s7, 8($t0)
-00000000	//			nop ->			nop
-20040000	//			addi	$a0, $zero, 0 ->			addi	$a0, $zero, 0
-00000000	//			nop ->			nop
-20050005	//			addi	$a1, $zero, 5 ->			addi	$a1, $zero, 5
-00000000	//			nop ->			nop
-2006fffd	//			addi	$a2, $zero, -3 ->			addi	$a2, $zero, -3
-00000000	//			nop ->			nop
-1ca00002	//			bgtz	$a1, br_ok1 ->			bgtz	$a1, br_ok1
-2002006f	//			addi	$v0, $zero, 111 ->			addi	$v0, $zero, 111
-00000000	//			nop ->			nop
-20020001	//	br_ok1:		addi	$v0, $zero, 1 ->	br_ok1:		addi	$v0, $zero, 1
-00000000	//			nop ->			nop
-18800002	//			blez	$a0, br_ok2 ->			blez	$a0, br_ok2
-200300de	//			addi	$v1, $zero, 222 ->			addi	$v1, $zero, 222
-00000000	//			nop ->			nop
-20030002	//	br_ok2:		addi	$v1, $zero, 2 ->	br_ok2:		addi	$v1, $zero, 2
-00000000	//			nop ->			nop
-04c00002	//			bltz	$a2, br_ok3 ->			bltz	$a2, br_ok3
-2010014d	//			addi	$s0, $zero, 333 ->			addi	$s0, $zero, 333
-00000000	//			nop ->			nop
-20100003	//	br_ok3:		addi	$s0, $zero, 3 ->	br_ok3:		addi	$s0, $zero, 3
-00000000	//			nop ->			nop
-04a10002	//			bgez	$a1, br_ok4 ->			bgez	$a1, br_ok4
-201101bc	//			addi	$s1, $zero, 444 ->			addi	$s1, $zero, 444
-00000000	//			nop ->			nop
-20110004	//	br_ok4:		addi	$s1, $zero, 4 ->	br_ok4:		addi	$s1, $zero, 4
-00000000	//			nop ->			nop
-0c000064	//			jal	after_jal ->			jal	after_jal
-00000000	//			nop ->			nop
-201a0309	//			addi	$k0, $zero, 777 ->			addi	$k0, $zero, 777
-00000000	//			nop ->			nop
-03e04020	//	after_jal:	add	$t0, $ra, $zero ->	after_jal:	add	$t0, $ra, $zero
-00000000	//			nop ->			nop
-0800006c	//			j	set_ret_target ->			j	set_ret_target
-00000000	//			nop ->			nop
-200904d2	//	ret_target:	addi	$t1, $zero, 1234 ->	ret_target:	addi	$t1, $zero, 1234
-00000000	//			nop ->			nop
-0800006f	//			j	end ->			j	end
-00000000	//			nop ->			nop
-0c000068	//	set_ret_target:	jal	ret_target ->	set_ret_target:	jal	ret_target
 00000000	//			nop ->			nop
 00000000	//			nop ->			nop
-0800006f	//	end:		j	end ->	end:		j	end
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+01095022	//			sub	$t2, $t0, $t1 ->			sub	$t2, $t0, $t1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+71495802	//			mul	$t3, $t2, $t1 ->			mul	$t3, $t2, $t1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+012b6020	//			add	$t4, $t1, $t3 ->			add	$t4, $t1, $t3
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+200d7fff	//			addi	$t5, $zero, 32767 ->			addi	$t5, $zero, 32767
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+21ad7fff	//			addi	$t5, $t5, 32767 ->			addi	$t5, $t5, 32767
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+21ad2347	//			addi	$t5, $t5, 9031 ->			addi	$t5, $t5, 9031
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+ac8d0010	//			sw	$t5, 16($a0) ->			sw	$t5, 16($a0)
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+a48d0014	//			sh	$t5, 20($a0) ->			sh	$t5, 20($a0)
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+a08d0018	//			sb	$t5, 24($a0) ->			sb	$t5, 24($a0)
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+808e0018	//			lb	$t6, 24($a0) ->			lb	$t6, 24($a0)
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+848e0014	//			lh	$t6, 20($a0) ->			lh	$t6, 20($a0)
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+8c8e0010	//			lw	$t6, 16($a0) ->			lw	$t6, 16($a0)
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+392d0001	//			xori	$t5, $t1, 1 ->			xori	$t5, $t1, 1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+01ab6826	//			xor	$t5, $t5, $t3 ->			xor	$t5, $t5, $t3
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+316d7fff	//			andi	$t5, $t3, 32767 ->			andi	$t5, $t3, 32767
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+01896824	//			and	$t5, $t4, $t1 ->			and	$t5, $t4, $t1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+350d0001	//			ori	$t5, $t0, 1 ->			ori	$t5, $t0, 1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+01096825	//			or	$t5, $t0, $t1 ->			or	$t5, $t0, $t1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+01096827	//			nor	$t5, $t0, $t1 ->			nor	$t5, $t0, $t1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+296d03e8	//			slti	$t5, $t3, 1000 ->			slti	$t5, $t3, 1000
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+018b602a	//			slt	$t4, $t4, $t3 ->			slt	$t4, $t4, $t3
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+000d6a00	//			sll	$t5, $t5, 8 ->			sll	$t5, $t5, 8
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+000d6882	//			srl	$t5, $t5, 2 ->			srl	$t5, $t5, 2
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+1d00000b	//			bgtz	$t0, b1 ->			bgtz	$t0, b1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+2008ffff	//			addi	$t0, $zero, -1 ->			addi	$t0, $zero, -1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+20080001	//	b1:		addi	$t0, $zero, 1 ->	b1:		addi	$t0, $zero, 1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+2008ffff	//			addi	$t0, $zero, -1 ->			addi	$t0, $zero, -1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+0501000b	//			bgez	$t0, b2 ->			bgez	$t0, b2
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+20080005	//			addi	$t0, $zero, 5 ->			addi	$t0, $zero, 5
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+21080007	//	b2:		addi	$t0, $t0, 7 ->	b2:		addi	$t0, $t0, 7
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+1108000b	//			beq	$t0, $t0, b3 ->			beq	$t0, $t0, b3
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+2009000a	//			addi	$t1, $zero, 10 ->			addi	$t1, $zero, 10
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+2129000f	//	b3:		addi	$t1, $t1, 15 ->	b3:		addi	$t1, $t1, 15
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+1509000b	//			bne	$t0, $t1, b4 ->			bne	$t0, $t1, b4
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+20090014	//			addi	$t1, $zero, 20 ->			addi	$t1, $zero, 20
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+2129001e	//	b4:		addi	$t1, $t1, 30 ->	b4:		addi	$t1, $t1, 30
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+1920000b	//			blez	$t1, b5 ->			blez	$t1, b5
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+20090028	//			addi	$t1, $zero, 40 ->			addi	$t1, $zero, 40
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+21290032	//	b5:		addi	$t1, $t1, 50 ->	b5:		addi	$t1, $t1, 50
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+200d0003	//			addi	$t5, $zero, 3 ->			addi	$t5, $zero, 3
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+05a0001d	//	b6:		bltz	$t5, exit ->	b6:		bltz	$t5, exit
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+0c000114	//			jal	dummy_func ->			jal	dummy_func
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+08000102	//			j	b6 ->			j	b6
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+21adffff	//	dummy_func:	addi	$t5, $t5, -1 ->	dummy_func:	addi	$t5, $t5, -1
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+03e00008	//			jr	$ra ->			jr	$ra
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+08000000	//	exit:		j	main ->	exit:		j	main
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
+00000000	//			nop ->			nop
 00000000	//			nop ->			nop
