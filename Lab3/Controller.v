@@ -15,7 +15,7 @@ module Controller(
   // WB
   output reg         RegWrite,
   output reg  [1:0]  RegDst,      // 00 rt, 01 rd, 10 ra
-  output reg  [1:0]  MemToReg,    // 00 ALU, 01 DM, 10 PC+8
+  output reg  [1:0]  MemToReg,    // 00 ALU, 01 DM, 10 PC+4
 
   // EX
   output reg  [1:0]  ALUSrc,      // 00 rt, 01 imm, 10 shamt

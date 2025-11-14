@@ -243,7 +243,7 @@ module top(
     ID_EX_Reg IDEX(
         .Clk(clkdiv),
         .Reset(Reset),
-        .Flush(ID_EX_Flush | Flush), //flush on load-use hazard OR on branches/jumps
+        .Flush(ID_EX_Flush), //flush on load-use hazard 
         .instr_index_in(ID_Instr[25:0]),
         .RegWrite_in(RegWrite),
         .MemToReg_in(MemToReg),
@@ -474,8 +474,8 @@ module top(
         (MemToReg_WB == 2'b10) ? PCPlus4_WB :
                                  32'b0;
 
-    // Outputs
-    assign PC_out   = PC;
+    // Outputs: show PC of the instruction being written back
+    assign PC_out   = PCPlus4_WB - 32'd4;
     assign Data_out = RegWrite_WB ? WriteData_WB : 32'b0;
 
 endmodule
