@@ -1,148 +1,161 @@
-############################################################
-# Lab 6 Comprehensive Hazard / Forwarding Test
-# - No NOPs
-# - Stresses:
-#     * EX/MEM & MEM/WB forwarding
-#     * lw-use stall (load → ALU)
-#     * lw → branch hazard
-#     * ALU → store data forwarding
-#     * beq / bne / j / jal / jr
-#
-# Expected behavior (high level):
-#   - Uses memory at base address 0, 4, 8, ...
-#   - Creates lots of data dependencies with no NOPs
-#   - Ends in an infinite loop at label "end"
+# Lab 6 Full Hazard / Forwarding / Instruction-Coverage Test
+# Includes all Table 1 instructions (no NOPs)
 # Brandon Sisco, Gavin Hernandez, Griffith Wiele
 # 33%, 33%, 33%
-############################################################
 
-        .data
-array:  .word 6, 10, 0, 0, 0, 0, 0   # DataMemory[0]=6, [4]=10, [8]=0 initially
+	.text
+	.globl main
 
-        .text
-        .globl main
-
-############################################################
+########################################
 # main
-############################################################
+########################################
 main:
-        ####################################################
-        # Setup base and some simple constants
-        # (matches the style of your Lab 4–5 sample)
-        ####################################################
-        addi $t0, $zero, 0        # t0 = 0, base address for DataMemory
-        addi $t1, $zero, 6        # t1 = 6
-        addi $t2, $zero, 10       # t2 = 10
+########################################
+# Section 0: Initialization
+########################################
+    addi $t0, $zero, 0          # base address = 0
+    addi $t1, $zero, 6          # t1 = 6
+    addi $t2, $zero, 10         # t2 = 10
 
-        # Store initial values into memory to verify sw/lw
-        sw   $t1, 0($t0)          # MEM[0] = 6
-        sw   $t2, 4($t0)          # MEM[4] = 10
+########################################
+# Section 1: R-type forwarding & ALU ops
+# add, sub, and, or, xor, nor, slt, sll, srl, mul
+########################################
+    add  $t3, $t1, $t2          # t3 = 6 + 10 = 16 (add)
+    sub  $t4, $t2, $t1          # t4 = 10 - 6 = 4  (sub, RAW after t2)
 
-        ####################################################
-        # Section 1: R-type arithmetic + EX/MEM forwarding
-        ####################################################
-        add  $t3, $t1, $t2        # t3 = 6 + 10 = 16
-        sub  $t4, $t3, $t1        # hazard: uses t3 (EX/MEM forwarding) → 16 - 6 = 10
-        and  $t5, $t3, $t2        # hazard: t3 forwarded again
-        or   $t6, $t3, $t1        # or(16,6)
-        slt  $t7, $t1, $t2        # t7 = (6 < 10) ? 1 : 0  → 1
-        sll  $s0, $t7, 2          # s0 = 1 << 2 = 4
-        srl  $s1, $s0, 1          # s1 = 4 >> 1 = 2
+    and  $t5, $t3, $t4          # t5 = 16 & 4 = 0
+    or   $t6, $t3, $t4          # t6 = 16 | 4 = 20
+    xor  $t7, $t3, $t4          # t7 = 16 ^ 4 = 20
+    nor  $s0, $t3, $t4          # s0 = ~(16 | 4) = ~20
 
-        ####################################################
-        # Section 2: I-type arithmetic + sign extension
-        ####################################################
-        addi $s1, $zero, 0        # s1 = 0 (clean start for later loop)
-        addi $s2, $zero, -1       # s2 = 0xFFFF_FFFF (tests sign-extension)
-        ori  $s3, $zero, 0x00FF   # s3 = 0x000000FF (zero-extend imm)
-        slti $s4, $s2, 0          # s4 = (s2 < 0) ? 1 : 0  → should be 1
+    slt  $s1, $t1, $t2          # s1 = (6 < 10) = 1
+    slt  $s2, $t2, $t1          # s2 = (10 < 6) = 0
 
-        ####################################################
-        # Section 3: Memory + load-use hazard (lw → ALU)
-        ####################################################
-        lw   $s5, 0($t0)          # s5 = MEM[0] = 6
-        add  $s6, $s5, $t1        # lw-use hazard: s6 = 6 + 6 = 12
-                                  # MUST stall 1 cycle then forward
+    sll  $s3, $t1, 2            # s3 = 6 << 2 = 24
+    srl  $s4, $t2, 1            # s4 = 10 >> 1 = 5
 
-        lw   $s7, 4($t0)          # s7 = MEM[4] = 10
-        sub  $t8, $s7, $s5        # t8 = 10 - 6 = 4 (data from prior lw's)
+    # mul via SPECIAL2 (Controller supports this)
+    mul  $s5, $t1, $t2          # s5 = 6 * 10 = 60
 
-        ####################################################
-        # Section 4: ALU → store data forwarding
-        ####################################################
-        add  $t9, $t1, $t1        # t9 = 6 + 6 = 12
-        sw   $t9, 8($t0)          # hazard: store uses forwarded t9
-                                  # MEM[8] should get 12
+########################################
+# Section 2: I-type arithmetic/logical
+# addi, slti, andi, ori, xori
+########################################
+    addi $s6, $zero, -1         # s6 = 0xFFFF_FFFF
+    andi $s7, $s6, 0x00FF       # s7 = 0x0000_00FF
+    ori  $t8, $zero, 0x00F0     # t8 = 0x0000_00F0
+    xori $t9, $t8,   0x000F     # t9 = 0x0000_000F ^ 0x00F0 = 0x00FF
+    slti $a0, $t1,   10         # a0 = (6 < 10) = 1
+    slti $a1, $t2,   10         # a1 = (10 < 10) = 0
 
-        ####################################################
-        # Section 5: Branch tests (beq / bne)
-        # - also touches ID-stage forwarding
-        ####################################################
+########################################
+# Section 3: Memory operations
+# lw, lh, lb, sw, sh, sb
+########################################
+    # Store a word, half, byte pattern into memory
+    sw   $t1, 0($t0)            # MEM[0]  = 0x0000_0006
+    sh   $t2, 4($t0)            # MEM[4]  = low half = 0x000A
+    sb   $t8, 8($t0)            # MEM[8]  = low byte of 0x00F0 = 0xF0
 
-        # Branch 1: beq taken (no load before, just ALU results)
-        # t9 = 12, s6 = 12 from earlier
-        beq  $t9, $s6, branch1_taken   # taken
-        addi $a0, $zero, 0             # SHOULD BE SKIPPED if beq works
+    # Load them back with different sizes/sign behavior
+    lw   $a2, 0($t0)            # a2 = 6
+    lh   $a3, 4($t0)            # a3 = sign-extended 0x000A = 10
+    lb   $v0, 8($t0)            # v0 = sign-extended 0xF0 = -16 (0xFFFF_FFF0)
 
-branch1_taken:
-        addi $a0, $zero, 1             # mark: branch1 taken (a0 = 1)
+########################################
+# Section 4: Load-use hazard + store forwarding
+########################################
+    lw   $v1, 0($t0)            # v1 = 6 (load)
+    add  $v1, $v1, $t1          # v1 = 6 + 6 = 12 (needs load-use stall)
+    sw   $v1, 12($t0)           # MEM[12] = 12 (forward v1 to store)
 
-        # Branch 2: bne not taken
-        bne  $s5, $s5, branch2_taken   # NOT taken, since s5 == s5
-        addi $a1, $zero, 2             # mark: fell through bne (bne not taken)
+########################################
+# Section 5: Basic beq/bne branches (taken / not taken)
+########################################
+    beq  $t1, $t1, beq_taken    # taken
+    addi $a0, $zero, 0          # should be flushed if beq taken
 
-branch2_taken:
-        # If something is wrong, this label might get hit (shouldn’t in correct run)
+beq_taken:
+    addi $a0, $zero, 1          # a0 = 1
 
-        ####################################################
-        # Section 6: lw → branch hazard (load-use + branch)
-        ####################################################
-        lw   $t2, 0($t0)               # t2 = MEM[0] = 6
-        beq  $t2, $s5, branch3_taken   # dependent on just-loaded t2
-                                       # MUST stall + then branch taken
+    bne  $t1, $t1, bne_taken    # NOT taken
+    addi $a1, $zero, 2          # a1 = 2, must execute
 
-        addi $a2, $zero, 0             # SHOULD BE SKIPPED if branch works
+bne_taken:
+    # no write here; just a label
 
-branch3_taken:
-        addi $a2, $zero, 3             # mark: branch3 taken (a2 = 3)
+########################################
+# Section 6: Extended branch types
+# blez, bgtz, bltz, bgez
+########################################
+    # Prepare some signed values:
+    addi $s0, $zero, -5         # s0 = -5
+    addi $s1, $zero,  0         # s1 = 0
+    addi $s2, $zero,  3         # s2 = 3
 
-        ####################################################
-        # Section 7: Small counted loop using bne
-        # - exercises repeated branching and forwarding
-        ####################################################
-        addi $s0, $zero, 3             # loop counter = 3
-        addi $s1, $zero, 0             # loop accumulator = 0
+    # blez: branch if <= 0 (should be taken with s0)
+    addi $t3, $zero, 0          # t3 = 0
+    blez $s0, blez_taken        # -5 <= 0 → taken
+    addi $t3, $zero, 1          # should be flushed
+
+blez_taken:
+    addi $t3, $t3, 2            # t3 = 2
+
+    # bgtz: branch if > 0 (should be taken with s2)
+    addi $t4, $zero, 0          # t4 = 0
+    bgtz $s2, bgtz_taken        # 3 > 0 → taken
+    addi $t4, $zero, 1          # should be flushed
+
+bgtz_taken:
+    addi $t4, $t4, 3            # t4 = 3
+
+    # bltz: branch if < 0 (should be taken with s0)
+    addi $t5, $zero, 0          # t5 = 0
+    bltz $s0, bltz_taken        # -5 < 0 → taken
+    addi $t5, $zero, 1          # should be flushed
+
+bltz_taken:
+    addi $t5, $t5, 4            # t5 = 4
+
+    # bgez: branch if >= 0 (should be taken with s2)
+    addi $t6, $zero, 0          # t6 = 0
+    bgez $s2, bgez_taken        # 3 >= 0 → taken
+    addi $t6, $zero, 1          # should be flushed
+
+bgez_taken:
+    addi $t6, $t6, 5            # t6 = 5
+
+########################################
+# Section 7: Loop with bne and data dependencies
+########################################
+    addi $s3, $zero, 3          # loop counter = 3
+    addi $s4, $zero, 0          # accumulator = 0
 
 loop_start:
-        addi $s1, $s1, 1               # s1++
-        add  $s2, $s1, $s0             # hazard inside loop (forwarding)
-        bne  $s0, $zero, loop_body     # while (s0 != 0) goto loop_body
-        j    loop_done                 # if s0 == 0, exit
+    addi $s4, $s4, 1            # s4++
+    add  $s5, $s3, $s4          # s5 = s3 + s4 (uses forwarding)
+    bne  $s3, $zero, loop_body  # while (s3 != 0) → taken until final
+    j    loop_done
 
 loop_body:
-        addi $s0, $s0, -1              # s0--
-        j    loop_start                # back to top
+    addi $s3, $s3, -1           # s3--
+    j    loop_start
 
 loop_done:
-        ####################################################
-        # Section 8: JAL / JR test (simple subroutine)
-        ####################################################
-        addi $v0, $zero, 0             # v0 = 0 (will be incremented in func)
-        jal  func                      # PC+4 should go into $ra
+########################################
+# Section 8: JAL / JR test
+########################################
+    addi $v1, $zero, 0          # v1 = 0 (will hold "func ran" flag)
+    jal  func                   # save return addr in $ra, jump
+    addi $v1, $v1, 9            # runs after func returns
 
-        addi $v1, $zero, 9             # runs AFTER returning from func
-                                       # (v1 = 9 just as a marker)
-
-        ####################################################
-        # Done: infinite loop
-        ####################################################
 end:
-        j    end                       # stay here forever
+    j    end                    # infinite loop
 
-############################################################
-# func: simple function called via JAL
-# - Increments v0 and returns with JR $ra
-############################################################
+########################################
+# func: test JR with $ra
+########################################
 func:
-        addi $v0, $v0, 1               # v0 = v0 + 1 (should end up = 1)
-        jr   $ra
+    addi $v1, $v1, 1            # v1 = v1 + 1 (mark func called)
+    jr   $ra                    # return to caller
