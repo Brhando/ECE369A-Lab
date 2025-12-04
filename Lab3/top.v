@@ -23,12 +23,14 @@ module top(
     input wire Clk,
     input wire Reset,
     output wire [6:0] out7,
-    output wire [7:0] en_out
+    output wire [7:0] en_out,
+    output wire [31:0] PC_out,
+    output wire [31:0] Data_out
 );
 
     // Control / Data signals
-    wire [31:0] PC_out;
-    wire [31:0] Data_out;
+//    wire [31:0] PC_out;
+//    wire [31:0] Data_out;
     wire RegWrite, MemRead;
     wire [1:0] RegDst, MemToReg, ALUSrc;
     wire [3:0] ALUControl;
@@ -132,8 +134,9 @@ module top(
 
     // Flush logic (control resolved in ID stage)
     // Only flush when we're not stalling due to a hazard
-    assign Flush = PCWrite && ((Branch && BranchTaken) || Jump || JumpReg);
-
+    //assign Flush = PCWrite && ((Branch && BranchTaken) || Jump || JumpReg);
+assign Flush = (Branch && BranchTaken) || Jump || JumpReg;
+    
     // Display
     Two4DigitDisplay TDD(
         .NumberA(PC_out[15:0]),
@@ -144,11 +147,12 @@ module top(
     );
 
     // Clock divider
-    ClkDiv clock_divider(
-        .Clk(Clk),
-        .Rst(Reset),
-        .ClkOut(clkdiv)
-    );
+//    ClkDiv clock_divider(
+//        .Clk(Clk),
+//        .Rst(Reset),
+//        .ClkOut(clkdiv)
+//    );
+assign clkdiv = Clk;
 
     // IF/ID Pipeline Register
     IF_ID_Reg IFID(
@@ -211,8 +215,8 @@ module top(
 
     // Program Counter
     wire [31:0] PCNext_stall;
-    assign PCNext_stall = PCWrite ? PCNext : PC;  // if stall, hold PC
-
+    //assign PCNext_stall = PCWrite ? PCNext : PC;  // if stall, hold PC
+    assign PCNext_stall = (PCWrite || Flush) ? PCNext : PC;
     ProgramCounter PCount(
         .clk(clkdiv),
         .rst(Reset),
@@ -243,7 +247,7 @@ module top(
     ID_EX_Reg IDEX(
         .Clk(clkdiv),
         .Reset(Reset),
-        .Flush(ID_EX_Flush), //flush on load-use hazard 
+        .Flush(ID_EX_Flush || Flush), //flush on load-use hazard 
         .instr_index_in(ID_Instr[25:0]),
         .RegWrite_in(RegWrite),
         .MemToReg_in(MemToReg),
@@ -368,7 +372,8 @@ module top(
     // NextPC Unit
     NextPC nextpc(
         .PC(PC),
-        .PCPlus4(ID_PCPlus4),
+        .PCPlus4(PCPlus4), //change
+        .PCPlus4_branch(ID_PCPlus4),
         .rs_val(ID_rs_fwd),
         .imm_ext(Immediate),
         .instr_index(ID_Instr[25:0]),

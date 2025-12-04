@@ -1,6 +1,7 @@
 module NextPC(
     input  wire [31:0] PC,         // current PC (for jump index upper bits)
     input  wire [31:0] PCPlus4,    // PC + 4 of *ID-stage* instruction
+    input wire [31:0] PCPlus4_branch,
     input  wire [31:0] rs_val,     // forwarded rs value from ID stage
     input  wire [31:0] imm_ext,    // sign-extended immediate from ID
     input  wire [25:0] instr_index,
@@ -14,7 +15,7 @@ module NextPC(
 );
 
     wire [31:0] offset_sl2 = {imm_ext[29:0], 2'b00};      // imm << 2
-    wire [31:0] branch_tgt = PCPlus4 + offset_sl2;        // PC+4 + offset
+    wire [31:0] branch_tgt = PCPlus4_branch + offset_sl2;        // PC+4 + offset
 
     // Jump target (J / JAL)
     wire [31:0] jump_tgt = { PCPlus4[31:28], instr_index, 2'b00 };
@@ -26,6 +27,7 @@ module NextPC(
     // Decide if branch condition is satisfied
     always @* begin
         BranchTaken = 1'b0;
+        if (Branch) begin
         case (BranchType)
             3'b000: BranchTaken =  Zero;                         // BEQ
             3'b001: BranchTaken = ~Zero;                         // BNE
@@ -35,6 +37,7 @@ module NextPC(
             3'b101: BranchTaken = (~rs_neg) | rs_zero;           // BGEZ  (rs >= 0)
             default: BranchTaken = 1'b0;
         endcase
+        end
     end
 
     always @* begin
