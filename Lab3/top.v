@@ -23,14 +23,12 @@ module top(
     input wire Clk,
     input wire Reset,
     output wire [6:0] out7,
-    output wire [7:0] en_out,
-    output wire [31:0] PC_out,
-    output wire [31:0] Data_out
+    output wire [7:0] en_out
 );
 
     // Control / Data signals
-//    wire [31:0] PC_out;
-//    wire [31:0] Data_out;
+    wire [31:0] PC_out;
+    wire [31:0] Data_out;
     wire RegWrite, MemRead;
     wire [1:0] RegDst, MemToReg, ALUSrc;
     wire [3:0] ALUControl;
@@ -147,12 +145,12 @@ assign Flush = (Branch && BranchTaken) || Jump || JumpReg;
     );
 
     // Clock divider
-//    ClkDiv clock_divider(
-//        .Clk(Clk),
-//        .Rst(Reset),
-//        .ClkOut(clkdiv)
-//    );
-assign clkdiv = Clk;
+    ClkDiv clock_divider(
+        .Clk(Clk),
+        .Rst(Reset),
+        .ClkOut(clkdiv)
+    );
+
 
     // IF/ID Pipeline Register
     IF_ID_Reg IFID(
